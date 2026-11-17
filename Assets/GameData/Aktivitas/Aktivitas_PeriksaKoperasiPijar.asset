@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 49cb16444ab87ca48a23961968b6a563, type: 3}
+  m_Name: Aktivitas_PeriksaKoperasiPijar
+  m_EditorClassIdentifier: SELA.Runtime::ActivityData
+  nama: Periksa Koperasi Pijar
+  deskripsi: Baca profil dan kontak Koperasi Pijar. Kontraknya 3 bulan, jadi cek
+    dulu apa yang dijanjikan.
+  biayaTenaga: 1
+  biayaTekanan: 0
+  syaratBukti: []
+  hariMinimal: 1
+  hanyaSekali: 1
+  sekaliPerHari: 0
+  hasil: 
+  catatanHasil: 'Koperasi Pijar: kontak terkonfirmasi, tugas awal dibatasi, evaluasi
+    akhir kontrak tidak menjamin perpanjangan.'
+  tipe: 1
+  perusahaan: B
+  indeksPerusahaan: 1
+  hariInterview: 1

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf10ac204eb74897b6ff07a831088979, type: 3}
+  m_Name: NaskahHari1
+  m_EditorClassIdentifier: SELA.Runtime::NaskahData
+  hari: 1
+  judul: Bangun & Pesan Ibu
+  ringkasan: Raka bangun di kamar 07. Ponsel bergetar di atas meja, satu pesan baru dari Ibu.
+  pengirim: Ibu
+  pesanPembuka: Ka, ibu sudah beliin tiket bus tanggal 8. Kalau mau lebih cepat bilang saja. Kamar kosnya sampai kapan?
+  perusahaanLowongan: Studio Lajur
+  judulLowongan: Junior UI Implementer
+  draftLowongan: Tugas kerjakan antarmuka formulir. Gaji Rp4.200.000 per bulan, 40 jam per minggu, 2 hari istirahat. Dokumen asli dipegang pekerja, jaminan sosial tertulis. Ada pendamping tim dan lembur perlu persetujuan.
+  batasLamaran: Hari 3 malam
+  syaratLamaran: Portofolio antarmuka (E1)
+  catatanTambahan: Tiket bus dari Ibu tetap boleh dipakai. Kalender di dinding dibatasi 7 hari.
