@@ -2,20 +2,18 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// InterviewManager.cs
-/// Menjalankan interview dengan Nara (Studio Lajur) dan Bagas (Koperasi Pijar)
-/// sesuai naskah BAB V.
-///
-/// Aturan main (deterministik, tanpa angka acak):
-///   Tawaran diberikan hanya kalau SEMUA syarat ini terpenuhi:
-///     1. Semua bukti wajib ada pada snapshot lamaran (bukan pada draf).
-///     2. Tidak ada klaim berlebihan yang belum dikoreksi saat interview.
-///     3. Setiap jawaban bernilai minimal 1.
-///     4. Total nilai dua pertanyaan minimal 3 dari 4.
-///
-/// Nilai 0/1/2 tiap jawaban TIDAK pernah ditampilkan ke pemain.
-/// </summary>
+// InterviewManager.cs
+// Menjalankan interview dengan Nara (Studio Lajur) dan Bagas (Koperasi Pijar)
+// sesuai naskah BAB V.
+//
+// Aturan main (deterministik, tanpa angka acak):
+// Tawaran diberikan hanya kalau SEMUA syarat ini terpenuhi:
+// 1. Semua bukti wajib ada pada snapshot lamaran (bukan pada draf).
+// 2. Tidak ada klaim berlebihan yang belum dikoreksi saat interview.
+// 3. Setiap jawaban bernilai minimal 1.
+// 4. Total nilai dua pertanyaan minimal 3 dari 4.
+//
+// Nilai 0/1/2 tiap jawaban TIDAK pernah ditampilkan ke pemain.
 public class InterviewManager : MonoBehaviour
 {
     // ---------------------------------------------------------------
@@ -51,7 +49,7 @@ public class InterviewManager : MonoBehaviour
         public List<PertanyaanInterview> pertanyaan = new List<PertanyaanInterview>();
     }
 
-    /// <summary>Satu baris dialog yang sedang tampil.</summary>
+    // Satu baris dialog yang sedang tampil.
     private class Baris
     {
         public string pembicara = "";
@@ -77,10 +75,10 @@ public class InterviewManager : MonoBehaviour
 
     public static InterviewManager Instance { get; private set; }
 
-    /// <summary>True selama ada dialog interview yang sedang berjalan.</summary>
+    // True selama ada dialog interview yang sedang berjalan.
     public bool SedangBerlangsung { get; private set; }
 
-    /// <summary>Pembicara baris yang sedang tampil.</summary>
+    // Pembicara baris yang sedang tampil.
     public string PembicaraSaatIni
     {
         get
@@ -90,7 +88,7 @@ public class InterviewManager : MonoBehaviour
         }
     }
 
-    /// <summary>Teks baris yang sedang tampil.</summary>
+    // Teks baris yang sedang tampil.
     public string TeksSaatIni
     {
         get
@@ -100,7 +98,7 @@ public class InterviewManager : MonoBehaviour
         }
     }
 
-    /// <summary>Pilihan jawaban untuk baris sekarang. Kosong = tekan Enter untuk lanjut.</summary>
+    // Pilihan jawaban untuk baris sekarang. Kosong = tekan Enter untuk lanjut.
     public List<string> OpsiSaatIni
     {
         get
@@ -114,15 +112,18 @@ public class InterviewManager : MonoBehaviour
         }
     }
 
-    /// <summary>Dipanggil setiap isi dialog berubah (UI tinggal menggambar ulang).</summary>
+    // Dipanggil setiap isi dialog berubah (UI tinggal menggambar ulang).
     public event Action OnDialogBerubah;
 
-    /// <summary>Dipanggil saat interview selesai. Parameter: "A"/"B", lalu ringkasan hasil.</summary>
+    // Dipanggil saat interview selesai. Parameter: "A"/"B", lalu ringkasan hasil.
     public event Action<string, string> OnInterviewSelesai;
 
     void Awake()
     {
-        Instance = this;
+        // Kalau scene dimuat ulang, GameState yang lama masih hidup
+        // (DontDestroyOnLoad). Jadi instance yang baru tidak boleh merebut
+        // Instance, biar interview yang sedang jalan tidak keputus.
+        if (Instance == null) Instance = this;
         SusunDataInterview();
     }
 
@@ -197,7 +198,7 @@ public class InterviewManager : MonoBehaviour
     // Mulai interview
     // ---------------------------------------------------------------
 
-    /// <summary>Mulai interview untuk perusahaan "A" atau "B".</summary>
+    // Mulai interview untuk perusahaan "A" atau "B".
     public void MulaiInterview(string perusahaan)
     {
         interviewAktif = null;
@@ -227,7 +228,7 @@ public class InterviewManager : MonoBehaviour
         if (OnDialogBerubah != null) OnDialogBerubah();
     }
 
-    /// <summary>Susun urutan baris dialog untuk interview yang sedang aktif.</summary>
+    // Susun urutan baris dialog untuk interview yang sedang aktif.
     private void BangunBarisDialog()
     {
         barisDialog.Clear();
@@ -263,10 +264,8 @@ public class InterviewManager : MonoBehaviour
         barisDialog.Add(penutup);
     }
 
-    /// <summary>
-    /// Teks pilihan "meluruskan klaim".
-    /// Kalau lamaran tidak punya klaim berlebihan, teksnya dibuat generik.
-    /// </summary>
+    // Teks pilihan "meluruskan klaim".
+    // Kalau lamaran tidak punya klaim berlebihan, teksnya dibuat generik.
     private string BangunTeksKoreksi()
     {
         CVSystem.SnapshotCV snapshot = AmbilSnapshot();
@@ -316,7 +315,7 @@ public class InterviewManager : MonoBehaviour
     // Alur dialog
     // ---------------------------------------------------------------
 
-    /// <summary>Pemain memilih salah satu opsi (nomor mulai dari 0).</summary>
+    // Pemain memilih salah satu opsi (nomor mulai dari 0).
     public void PilihOpsi(int indeks)
     {
         if (!SedangBerlangsung) return;
@@ -344,7 +343,7 @@ public class InterviewManager : MonoBehaviour
         Lanjut();
     }
 
-    /// <summary>Lanjut ke baris berikutnya. Kalau sudah habis, interview selesai.</summary>
+    // Lanjut ke baris berikutnya. Kalau sudah habis, interview selesai.
     public void Lanjut()
     {
         if (!SedangBerlangsung) return;
@@ -416,10 +415,8 @@ public class InterviewManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Teks hasil interview: email tawaran atau alasan penolakan (BAB 5.3).
-    /// Dipakai UIManager untuk menampilkan layar hasil.
-    /// </summary>
+    // Teks hasil interview: email tawaran atau alasan penolakan (BAB 5.3).
+    // Dipakai UIManager untuk menampilkan layar hasil.
     public string TeksHasil(bool ditawari)
     {
         if (interviewAktif == null) return "";
@@ -471,7 +468,7 @@ public class InterviewManager : MonoBehaviour
         return hasil;
     }
 
-    /// <summary>True kalau interview ini berakhir dengan tawaran.</summary>
+    // True kalau interview ini berakhir dengan tawaran.
     public bool DiberiTawaran
     {
         get
@@ -482,7 +479,7 @@ public class InterviewManager : MonoBehaviour
         }
     }
 
-    /// <summary>Kembalikan ke kondisi awal (dipakai saat reset permainan).</summary>
+    // Kembalikan ke kondisi awal (dipakai saat reset permainan).
     public void ResetInterview()
     {
         SedangBerlangsung = false;

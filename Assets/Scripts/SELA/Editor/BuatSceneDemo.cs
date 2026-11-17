@@ -17,23 +17,21 @@ using UnityEngine.UI;
 
 namespace SELA.Editor
 {
-    /// <summary>
-    /// BuatSceneDemo.cs
-    /// Script EDITOR yang membuat scene demo SELA beserta asset ActivityData.
-    ///
-    /// Cara pakai (dari menu Unity):
-    ///   Tools > SELA > Buat Scene Demo
-    ///
-    /// Cara pakai (batch mode / terminal):
-    ///   Unity.exe -batchmode -projectPath &lt;project&gt; \
-    ///     -executeMethod SELA.Editor.BuatSceneDemo.BuildFromCommandLine
-    ///
-    /// Yang dibuat:
-    ///   - Assets/GameData/Aktivitas/*.asset  (13 ActivityData)
-    ///   - Assets/GameData/Material/*.mat     (material URP sederhana)
-    ///   - Assets/GameData/VolumeProfile.asset
-    ///   - Assets/Scenes/SELA_Play.unity       (scene demo siap main)
-    /// </summary>
+    // BuatSceneDemo.cs
+    // Script EDITOR yang membuat scene demo SELA beserta asset ActivityData.
+    //
+    // Cara pakai (dari menu Unity):
+    // Tools > SELA > Buat Scene Demo
+    //
+    // Cara pakai (batch mode / terminal):
+    // Unity.exe -batchmode -projectPath &lt;project&gt; \
+    // -executeMethod SELA.Editor.BuatSceneDemo.BuildFromCommandLine
+    //
+    // Yang dibuat:
+    // - Assets/GameData/Aktivitas/*.asset  (13 ActivityData)
+    // - Assets/GameData/Material/*.mat     (material URP sederhana)
+    // - Assets/GameData/VolumeProfile.asset
+    // - Assets/Scenes/SELA_Play.unity       (scene demo siap main)
     public static class BuatSceneDemo
     {
         private const string FolderGameData = "Assets/GameData";
@@ -125,14 +123,12 @@ namespace SELA.Editor
             AssetDatabase.CreateFolder(parent, nama);
         }
 
-        /// <summary>
-        /// Pastikan TMP Essential Resources ada di project.
-        ///
-        /// Kenapa tidak pakai AssetDatabase.ImportPackage? Karena import
-        /// package itu ASYNC, dan di batch mode Unity bisa keluar sebelum
-        /// import selesai. Jadi file .unitypackage-nya diekstrak manual di
-        /// sini (deterministik).
-        /// </summary>
+        // Pastikan TMP Essential Resources ada di project.
+        //
+        // Kenapa tidak pakai AssetDatabase.ImportPackage? Karena import
+        // package itu ASYNC, dan di batch mode Unity bisa keluar sebelum
+        // import selesai. Jadi file .unitypackage-nya diekstrak manual di
+        // sini (deterministik).
         private static void ImportTmpEssentials()
         {
             if (TmpSudahAda()) return;
@@ -154,12 +150,10 @@ namespace SELA.Editor
             return (guid != null && guid.Length > 0);
         }
 
-        /// <summary>
-        /// Ekstrak "TMP Essential Resources.unitypackage" ke Assets/TextMesh Pro.
-        /// Format .unitypackage = tar yang dikompres gzip, berisi folder per
-        /// GUID. Tiap folder punya file "pathname" (tujuan asset di project)
-        /// dan "asset" (isi file) + "asset.meta".
-        /// </summary>
+        // Ekstrak "TMP Essential Resources.unitypackage" ke Assets/TextMesh Pro.
+        // Format .unitypackage = tar yang dikompres gzip, berisi folder per
+        // GUID. Tiap folder punya file "pathname" (tujuan asset di project)
+        // dan "asset" (isi file) + "asset.meta".
         private static bool SalinTmpResources()
         {
             string folderPackage = CariFolderPackageTmp();
@@ -272,7 +266,7 @@ namespace SELA.Editor
             return string.Empty;
         }
 
-        /// <summary>Baca arsip tar dan tulis semua isinya ke folder tujuan.</summary>
+        // Baca arsip tar dan tulis semua isinya ke folder tujuan.
         private static void EkstrakTar(Stream stream, string folderTujuan)
         {
             byte[] header = new byte[512];
@@ -409,7 +403,8 @@ namespace SELA.Editor
                                                    bool hanyaSekali, bool sekaliPerHari,
                                                    string hasil, string catatanHasil,
                                                    ActivityData.Tipe tipe, string perusahaan,
-                                                   int indeksPerusahaan, int hariInterview)
+                                                   int indeksPerusahaan, int hariInterview,
+                                                   int hariMaks = 0)
         {
             string path = FolderAktivitas + "/" + namaAsset + ".asset";
             ActivityData data = AssetDatabase.LoadAssetAtPath<ActivityData>(path);
@@ -435,6 +430,7 @@ namespace SELA.Editor
             }
 
             data.hariMinimal = hariMinimal;
+            data.hariMaks = hariMaks;
             data.hanyaSekali = hanyaSekali;
             data.sekaliPerHari = sekaliPerHari;
             data.hasil = hasil;
@@ -497,7 +493,7 @@ namespace SELA.Editor
                 "Aktivitas_PeriksaAksesPrima",
                 "Periksa Akses Prima",
                 "Cek alamat dan kontak Akses Prima. Pastikan juga apa yang mereka minta soal dokumen.",
-                1, 0, null, 1, true, false,
+                1, 0, null, 4, true, false,
                 "",
                 "Akses Prima: alamat website berbeda dengan alamat di kontrak, nomor telepon tidak aktif, rincian tugas ditolak saat diminta klarifikasi.",
                 ActivityData.Tipe.Verifikasi, "C", 2, 1));
@@ -510,7 +506,7 @@ namespace SELA.Editor
                 1, 1, new string[] { "E1" }, 1, true, false,
                 "",
                 "Lamaran ke Studio Lajur terkirim. Interview dijadwalkan sesi siang.",
-                ActivityData.Tipe.KirimLamaran, "A", 0, 5));
+                ActivityData.Tipe.KirimLamaran, "A", 0, 5, 3));
 
             // 7. Kirim lamaran B (butuh E1+E2, interview hari 6)
             daftar.Add(BuatAktivitas(
@@ -520,7 +516,7 @@ namespace SELA.Editor
                 1, 1, new string[] { "E1", "E2" }, 3, true, false,
                 "",
                 "Lamaran ke Koperasi Pijar terkirim. Interview dijadwalkan sesi siang.",
-                ActivityData.Tipe.KirimLamaran, "B", 1, 6));
+                ActivityData.Tipe.KirimLamaran, "B", 1, 6, 5));
 
             // 8. Interview A
             daftar.Add(BuatAktivitas(
@@ -663,6 +659,7 @@ namespace SELA.Editor
             PuzzleAnchor anchor3 = anchor3Go.AddComponent<PuzzleAnchor>();
             anchor3.namaTampilan = "Pasang di dudukan kursi";
             anchor3.indeksRetakan = 2;
+            anchor3.hariMinimal = 6;
             anchor3.namaBendaYangDibutuhkan = "KartuIbu";
             anchor3.objekEfek = EfekRetakan(anchor3Go.transform, retakan, new Vector3(0f, 0.1f, 0f));
             anchor3.labelTujuan = BuatLabel3D("LabelTujuan_Retakan3", "Dudukan kosong menghadap jendela.",
@@ -697,6 +694,7 @@ namespace SELA.Editor
             PuzzleAnchor anchor2 = pintu07.AddComponent<PuzzleAnchor>();
             anchor2.namaTampilan = "Pakai kunci pada pintu 07";
             anchor2.indeksRetakan = 1;
+            anchor2.hariMinimal = 4;
             anchor2.namaBendaYangDibutuhkan = "Kunci07";
             anchor2.objekEfek = EfekRetakan(pintu07.transform, retakan, new Vector3(-0.12f, 0.35f, 0f));
             anchor2.labelTujuan = BuatLabel3D("LabelTujuan_Retakan2", "Pintu dengan label 07.",
@@ -720,6 +718,7 @@ namespace SELA.Editor
             PuzzleAnchor anchor1 = penjepit.AddComponent<PuzzleAnchor>();
             anchor1.namaTampilan = "Pasang kartu di penjepit foto";
             anchor1.indeksRetakan = 0;
+            anchor1.hariMinimal = 2;
             anchor1.namaBendaYangDibutuhkan = "KartuE0";
             anchor1.objekEfek = EfekRetakan(penjepit.transform, retakan, new Vector3(0f, 0.18f, 0f));
             anchor1.labelTujuan = BuatLabel3D("LabelTujuan_Retakan1", "Penjepit foto di ujung meja.",
@@ -850,10 +849,8 @@ namespace SELA.Editor
             return Kubik(nama, posisi, ukuran, material, induk);
         }
 
-        /// <summary>
-        /// Mesh retakan merah yang menempel di jangkar puzzle.
-        /// Collider-nya dimatikan supaya tidak menghalangi raycast tombol E.
-        /// </summary>
+        // Mesh retakan merah yang menempel di jangkar puzzle.
+        // Collider-nya dimatikan supaya tidak menghalangi raycast tombol E.
         private static GameObject EfekRetakan(Transform induk, Material material, Vector3 offsetLokal)
         {
             GameObject go = Kubik("EfekRetakan", Vector3.zero, new Vector3(0.3f, 0.3f, 0.06f), material, null);
@@ -867,10 +864,8 @@ namespace SELA.Editor
             return go;
         }
 
-        /// <summary>
-        /// Membuat label 3D (Canvas world space) berisi teks.
-        /// Dipakai sebagai "label tujuan" pada puzzle Retakan Ruang.
-        /// </summary>
+        // Membuat label 3D (Canvas world space) berisi teks.
+        // Dipakai sebagai "label tujuan" pada puzzle Retakan Ruang.
         private static GameObject BuatLabel3D(string nama, string teks, Vector3 posisi, Quaternion rotasi)
         {
             GameObject go = new GameObject(nama, typeof(RectTransform));
@@ -1081,6 +1076,7 @@ namespace SELA.Editor
             tab1.onClick.AddListener(delegate { ui.GantiTabLaptop(0); });
             tab2.onClick.AddListener(delegate { ui.GantiTabLaptop(1); });
             tab3.onClick.AddListener(delegate { ui.GantiTabLaptop(2); });
+            ui.tombolRakitCV = BuatTombolUI(pLaptop.transform, "TombolRakitCV", "Rakit CV", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-240f, -84f), new Vector2(-40f, -24f));
 
             // ---------- Panel Konfirmasi Aktivitas ----------
             GameObject pKonf = BuatPanel(canvas, "PanelKonfirmasiAktivitas", latar, true);
@@ -1115,6 +1111,30 @@ namespace SELA.Editor
             // ---------- Panel Ending ----------
             GameObject pEnding = BuatPanel(canvas, "PanelEnding", new Color(0.02f, 0.02f, 0.03f, 0.97f), true);
             ui.teksEnding = BuatTeks(pEnding.transform, "Teks", "", Vector2.zero, Vector2.one, 22f, TextAlignmentOptions.TopLeft);
+            ui.tombolKembaliMenu = BuatTombolUI(pEnding.transform, "TombolKembaliMenu", "Kembali ke menu utama", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-320f, 24f), new Vector2(-40f, 84f));
+
+            // ---------- Panel Rakit CV ----------
+            GameObject pRakit = BuatPanel(canvas, "PanelRakitCV", latar, true);
+            ui.teksRakitCV = BuatTeks(pRakit.transform, "Teks", "RAKIT CV", new Vector2(0f, 0.20f), new Vector2(1f, 1f), 22f, TextAlignmentOptions.TopLeft);
+            ui.wadahPilihanCV = BuatWadah(pRakit.transform, "DaftarPilihanCV", new Vector2(0f, 0f), new Vector2(1f, 0.20f));
+            ui.tombolTutupRakitCV = BuatTombolUI(pRakit.transform, "TombolTutup", "Tutup (Esc)", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-240f, 24f), new Vector2(-40f, 84f));
+
+            // ---------- Panel Verifikasi ----------
+            GameObject pVerif = BuatPanel(canvas, "PanelVerifikasi", latar, true);
+            ui.teksVerifikasi = BuatTeks(pVerif.transform, "Teks", "CEK LOWONGAN", new Vector2(0f, 0.16f), new Vector2(1f, 1f), 20f, TextAlignmentOptions.TopLeft);
+            ui.tombolVerifikasiSudah = BuatTombolUI(pVerif.transform, "TombolSudahDicek", "Sudah dicek", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(-280f, 40f), new Vector2(-20f, 110f));
+            ui.tombolVerifikasiBatal = BuatTombolUI(pVerif.transform, "TombolBatal", "Batal", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(20f, 40f), new Vector2(260f, 110f));
+
+            // ---------- Panel Pengaturan ----------
+            GameObject pAtur = BuatPanel(canvas, "PanelPengaturan", latar, true);
+            ui.teksPengaturan = BuatTeks(pAtur.transform, "Teks", "PENGATURAN", new Vector2(0f, 0.20f), new Vector2(1f, 1f), 22f, TextAlignmentOptions.TopLeft);
+            ui.wadahPengaturan = BuatWadah(pAtur.transform, "DaftarPengaturan", new Vector2(0f, 0f), new Vector2(1f, 0.20f));
+            ui.tombolTutupPengaturan = BuatTombolUI(pAtur.transform, "TombolTutup", "Tutup (Esc)", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-240f, 24f), new Vector2(-40f, 84f));
+
+            // ---------- Panel Credits ----------
+            GameObject pCredits = BuatPanel(canvas, "PanelCredits", latar, true);
+            ui.teksCredits = BuatTeks(pCredits.transform, "Teks", "", Vector2.zero, new Vector2(1f, 1f), 19f, TextAlignmentOptions.TopLeft);
+            ui.tombolTutupCredits = BuatTombolUI(pCredits.transform, "TombolTutup", "Tutup (Esc)", new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-240f, 24f), new Vector2(-40f, 84f));
 
             // ---------- Panel Menu Awal ----------
             // Dibuat paling akhir supaya menimpa panel lain (di atas).

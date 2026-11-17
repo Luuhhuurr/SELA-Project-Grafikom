@@ -1,14 +1,12 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-/// <summary>
-/// ObjekInteraktif.cs
-/// Script dasar untuk SEMUA benda yang bisa disentuh pemain dengan tombol E.
-///
-///(Ini script pembantu. EvidenceCard.cs dan PuzzleAnchor.cs mewarisi
-/// script ini, dan benda biasa seperti laptop/kasur/ponsel juga memakainya
-/// lewat tombol UnityEvent OnInteract.)
-/// </summary>
+// ObjekInteraktif.cs
+// Script dasar untuk SEMUA benda yang bisa disentuh pemain dengan tombol E.
+//
+// (Ini script pembantu. EvidenceCard.cs dan PuzzleAnchor.cs mewarisi
+// script ini, dan benda biasa seperti laptop/kasur/ponsel juga memakainya
+// lewat tombol UnityEvent OnInteract.)
 public class ObjekInteraktif : MonoBehaviour
 {
     [Header("Tampilan")]
@@ -33,12 +31,10 @@ public class ObjekInteraktif : MonoBehaviour
            + "(misal: buka panel laptop, geser pintu, dan sebagainya).")]
     public UnityEvent onInteract = new UnityEvent();
 
-    /// <summary>True kalau benda ini sudah diambil / sudah dipakai.</summary>
+    // True kalau benda ini sudah diambil / sudah dipakai.
     public bool sudahDigunakan = false;
 
-    /// <summary>
-    /// Dipanggil FirstPersonController saat pemain menekan E di dekat benda ini.
-    /// </summary>
+    // Dipanggil FirstPersonController saat pemain menekan E di dekat benda ini.
     public virtual void Interact()
     {
         // Kalau benda ini harus diambil lebih dulu, ambil sekarang.
@@ -63,24 +59,22 @@ public class ObjekInteraktif : MonoBehaviour
         if (onInteract != null) onInteract.Invoke();
     }
 
-    /// <summary>Teks prompt yang tampil di layar. Kosong kalau benda tak boleh disentuh.</summary>
+    // Teks prompt yang tampil di layar. Kosong kalau benda tak boleh disentuh.
     public virtual string TeksPrompt()
     {
         if (sudahDigunakan) return "";
         return "[E] " + namaTampilan;
     }
 
-    /// <summary>True kalau pemain boleh berinteraksi sekarang.</summary>
+    // True kalau pemain boleh berinteraksi sekarang.
     public virtual bool BisaDiInteraksi()
     {
         return !sudahDigunakan;
     }
 
-    /// <summary>
-    /// Matikan semua Collider di GameObject ini dan anak-anaknya.
-    /// Dipakai setelah benda diambil, supaya raycast tidak terus
-    /// menemukan benda yang sudah hilang.
-    /// </summary>
+    // Matikan semua Collider di GameObject ini dan anak-anaknya.
+    // Dipakai setelah benda diambil, supaya raycast tidak terus
+    // menemukan benda yang sudah hilang.
     protected void MatikanCollider()
     {
         Collider[] semua = GetComponentsInChildren<Collider>();

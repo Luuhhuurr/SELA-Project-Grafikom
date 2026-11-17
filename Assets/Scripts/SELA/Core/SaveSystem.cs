@@ -3,25 +3,23 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-/// <summary>
-/// SaveSystem.cs
-/// Menyimpan dan memuat seluruh data permainan ke file JSON di
-/// Application.persistentDataPath.
-///
-/// Ini adalah class STATIC (tidak perlu ditaruh di GameObject apa pun).
-/// Cara pakainya: SaveSystem.Simpan(); dan SaveSystem.Muat();
-///
-/// Alur aman saat menyimpan:
-///   1. tulis dulu ke file sementara (sela_save_tmp.json)
-///   2. salin file utama yang lama jadi checkpoint (sela_save_backup.json)
-///   3. timpa file utama dengan isi file sementara
-///   4. hapus file sementara
-/// Kalau game crash di tengah, file utama yang lama masih utuh
-/// dan checkpoint-nya masih ada.
-/// </summary>
+// SaveSystem.cs
+// Menyimpan dan memuat seluruh data permainan ke file JSON di
+// Application.persistentDataPath.
+//
+// Ini adalah class STATIC (tidak perlu ditaruh di GameObject apa pun).
+// Cara pakainya: SaveSystem.Simpan(); dan SaveSystem.Muat();
+//
+// Alur aman saat menyimpan:
+// 1. tulis dulu ke file sementara (sela_save_tmp.json)
+// 2. salin file utama yang lama jadi checkpoint (sela_save_backup.json)
+// 3. timpa file utama dengan isi file sementara
+// 4. hapus file sementara
+// Kalau game crash di tengah, file utama yang lama masih utuh
+// dan checkpoint-nya masih ada.
 public static class SaveSystem
 {
-    /// <summary>Hasil percobaan memuat data.</summary>
+    // Hasil percobaan memuat data.
     public enum HasilMuat
     {
         Berhasil,          // file utama terbaca
@@ -29,22 +27,18 @@ public static class SaveSystem
         Gagal               // tidak ada data yang bisa dipulihkan
     }
 
-    /// <summary>
-    /// Dipanggil setelah percobaan memuat selesai, supaya UIManager bisa
-    /// menawarkan checkpoint ke pemain (bukan memaksakan diam-diam).
-    /// </summary>
+    // Dipanggil setelah percobaan memuat selesai, supaya UIManager bisa
+    // menawarkan checkpoint ke pemain (bukan memaksakan diam-diam).
     public static event Action<HasilMuat> OnHasilMuat;
 
     private const string NamaUtama = "sela_save.json";
     private const string NamaTmp = "sela_save_tmp.json";
     private const string NamaBackup = "sela_save_backup.json";
 
-    /// <summary>
-    /// Folder tempat file save ditulis. Kalau dikosongkan (default),
-    /// dipakai Application.persistentDataPath seperti biasa.
-    /// Diisi hanya saat uji otomatis, supaya file uji tidak menimpa
-    /// file save pemain yang asli.
-    /// </summary>
+    // Folder tempat file save ditulis. Kalau dikosongkan (default),
+    // dipakai Application.persistentDataPath seperti biasa.
+    // Diisi hanya saat uji otomatis, supaya file uji tidak menimpa
+    // file save pemain yang asli.
     public static string FolderSimpanKustom = "";
 
     private static string FolderSimpan
@@ -56,11 +50,9 @@ public static class SaveSystem
         }
     }
 
-    /// <summary>
-    /// Wadah data yang disimpan ke JSON.
-    /// PENTING: JsonUtility hanya bisa menyimpan FIELD (bukan property),
-    /// jadi semua isinya harus public field, bukan public property.
-    /// </summary>
+    // Wadah data yang disimpan ke JSON.
+    // PENTING: JsonUtility hanya bisa menyimpan FIELD (bukan property),
+    // jadi semua isinya harus public field, bukan public property.
     [System.Serializable]
     public class DataSimpan
     {
@@ -103,7 +95,7 @@ public static class SaveSystem
     // Menyimpan
     // ---------------------------------------------------------------
 
-    /// <summary>Simpan seluruh state permainan ke disk. Aman dipanggil sering.</summary>
+    // Simpan seluruh state permainan ke disk. Aman dipanggil sering.
     public static void Simpan()
     {
         if (GameState.Instance == null) return;
@@ -149,12 +141,10 @@ public static class SaveSystem
     // Memuat
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Muat state permainan dari disk.
-    /// Kalau file utama rusak, otomatis mencoba file checkpoint.
-    /// Hasilnya dikembalikan agar UIManager bisa menawarkan checkpoint
-    /// ke pemain (bukan diam-diam memaksa).
-    /// </summary>
+    // Muat state permainan dari disk.
+    // Kalau file utama rusak, otomatis mencoba file checkpoint.
+    // Hasilnya dikembalikan agar UIManager bisa menawarkan checkpoint
+    // ke pemain (bukan diam-diam memaksa).
     public static HasilMuat Muat()
     {
         HasilMuat hasil = MuatInternal();
@@ -195,7 +185,7 @@ public static class SaveSystem
         return HasilMuat.Gagal;
     }
 
-    /// <summary>Hapus semua file save. Dipakai kalau pemain memilih "Mulai ulang".</summary>
+    // Hapus semua file save. Dipakai kalau pemain memilih "Mulai ulang".
     public static void HapusSave()
     {
         string folder = FolderSimpan;
@@ -216,7 +206,7 @@ public static class SaveSystem
         }
     }
 
-    /// <summary>True kalau masih ada file save utama di disk.</summary>
+    // True kalau masih ada file save utama di disk.
     public static bool AdaSave()
     {
         string folder = FolderSimpan;
@@ -228,7 +218,7 @@ public static class SaveSystem
     // Helper internal
     // ---------------------------------------------------------------
 
-    /// <summary>Kumpulkan state sekarang jadi objek DataSimpan.</summary>
+    // Kumpulkan state sekarang jadi objek DataSimpan.
     private static DataSimpan BuatData()
     {
         GameState gs = GameState.Instance;
@@ -281,7 +271,7 @@ public static class SaveSystem
         return data;
     }
 
-    /// <summary>Baca file JSON. Kalau rusak, kembalikan null (bukan error).</summary>
+    // Baca file JSON. Kalau rusak, kembalikan null (bukan error).
     private static DataSimpan BacaFile(string path)
     {
         try
@@ -304,7 +294,7 @@ public static class SaveSystem
         }
     }
 
-    /// <summary>Tulis data hasil muat ke balik ke semua sistem.</summary>
+    // Tulis data hasil muat ke balik ke semua sistem.
     private static void Terapkan(DataSimpan data)
     {
         GameState gs = GameState.Instance;

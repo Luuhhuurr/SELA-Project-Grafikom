@@ -6,25 +6,23 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 
-/// <summary>
-/// UjiSmokePlayMode.cs
-/// Uji asap (smoke test) untuk game SELA.
-///
-/// Uji ini memuat scene demo SELA_Play dalam mode Play, lalu memastikan:
-///   1. Semua sistem (GameState, Session, Activity, CV, Interview, Inventory) ada.
-///   2. Semua panel dan teks UI ditemukan (tidak ada panel yang gagal dicari).
-///   3. Font TextMeshPro tersedia, kalau tidak teks tidak akan tampil.
-///   4. Membuka panel Catatan mengunci gerak pemain, menutupnya melepas kunci.
-///   5. Mengambil kartu bukti menambah ID bukti dan isi tas.
-///   6. Menjalankan aktivitas memotong tenaga dan menambah tekanan.
-///   7. Tidak ada error/exception yang muncul selama semua langkah di atas.
-///
-/// Cara menjalankan (dari terminal):
-///   Unity.exe -batchmode -runTests -testPlatform PlayMode \
-///             -projectPath <path project> -testResults hasil.xml
-///
-/// ATAU dari Editor: Window > General > Test Runner > PlayMode > Run All.
-/// </summary>
+// UjiSmokePlayMode.cs
+// Uji asap (smoke test) untuk game SELA.
+//
+// Uji ini memuat scene demo SELA_Play dalam mode Play, lalu memastikan:
+// 1. Semua sistem (GameState, Session, Activity, CV, Interview, Inventory) ada.
+// 2. Semua panel dan teks UI ditemukan (tidak ada panel yang gagal dicari).
+// 3. Font TextMeshPro tersedia, kalau tidak teks tidak akan tampil.
+// 4. Membuka panel Catatan mengunci gerak pemain, menutupnya melepas kunci.
+// 5. Mengambil kartu bukti menambah ID bukti dan isi tas.
+// 6. Menjalankan aktivitas memotong tenaga dan menambah tekanan.
+// 7. Tidak ada error/exception yang muncul selama semua langkah di atas.
+//
+// Cara menjalankan (dari terminal):
+// Unity.exe -batchmode -runTests -testPlatform PlayMode \
+// -projectPath <path project> -testResults hasil.xml
+//
+// ATAU dari Editor: Window > General > Test Runner > PlayMode > Run All.
 public class UjiSmokePlayMode
 {
     [UnityTest]

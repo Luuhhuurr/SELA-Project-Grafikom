@@ -2,19 +2,17 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// CVSystem.cs
-/// Mengatur draf CV Raka dan snapshot lamaran yang dikirim.
-///
-/// Naskah BAB 3.5:
-///   - Klaim 1: "membantu pengembangan antarmuka proyek kuliah"  (sesuai bukti)
-///              "memimpin sistem produksi"                        (berlebihan)
-///   - Klaim 2: "menguji formulir secara manual"                 (sesui bukti)
-///              "menjamin sistem bebas seluruh kesalahan"         (berlebihan)
-///
-/// Saat lamaran dikirim, CV DIBEKU (snapshot). Bukti yang dibuat
-/// belakangan tidak ikut masuk ke lamaran lama.
-/// </summary>
+// CVSystem.cs
+// Mengatur draf CV Raka dan snapshot lamaran yang dikirim.
+//
+// Naskah BAB 3.5:
+// - Klaim 1: "membantu pengembangan antarmuka proyek kuliah"  (sesuai bukti)
+// "memimpin sistem produksi"                        (berlebihan)
+// - Klaim 2: "menguji formulir secara manual"                 (sesui bukti)
+// "menjamin sistem bebas seluruh kesalahan"         (berlebihan)
+//
+// Saat lamaran dikirim, CV DIBEKU (snapshot). Bukti yang dibuat
+// belakangan tidak ikut masuk ke lamaran lama.
 public class CVSystem : MonoBehaviour
 {
     // ---------------------------------------------------------------
@@ -25,7 +23,7 @@ public class CVSystem : MonoBehaviour
     public const string Klaim2Sesuai = "menguji formulir secara manual";
     public const string Klaim2Berlebihan = "menjamin sistem bebas seluruh kesalahan";
 
-    /// <summary>Salinan CV saat dikirim. Tidak berubah lagi setelah itu.</summary>
+    // Salinan CV saat dikirim. Tidak berubah lagi setelah itu.
     [System.Serializable]
     public class SnapshotCV
     {
@@ -37,17 +35,17 @@ public class CVSystem : MonoBehaviour
         public bool terkirim = false;
     }
 
-    /// <summary>Semua lamaran yang sudah dikirim (satu per perusahaan).</summary>
+    // Semua lamaran yang sudah dikirim (satu per perusahaan).
     public List<SnapshotCV> daftarLamaran = new List<SnapshotCV>();
 
-    /// <summary>Dipanggil setiap ada lamaran baru yang dikirim.</summary>
+    // Dipanggil setiap ada lamaran baru yang dikirim.
     public event Action<string> OnLamaranTerkirim;
 
     // ---------------------------------------------------------------
     // Draf CV
     // ---------------------------------------------------------------
 
-    /// <summary>Isi kolom klaim draf. Nomor 1 atau 2.</summary>
+    // Isi kolom klaim draf. Nomor 1 atau 2.
     public void AturKlaim(int nomor, string teks)
     {
         GameState gs = GameState.Instance;
@@ -59,7 +57,7 @@ public class CVSystem : MonoBehaviour
         gs.PanggilPerubahanState();
     }
 
-    /// <summary>Pasang bukti ke draf CV (E0 / E1 / E2).</summary>
+    // Pasang bukti ke draf CV (E0 / E1 / E2).
     public void LampirkanBukti(string idBukti)
     {
         GameState gs = GameState.Instance;
@@ -73,7 +71,7 @@ public class CVSystem : MonoBehaviour
         gs.PanggilPerubahanState();
     }
 
-    /// <summary>Lepas bukti dari draf CV.</summary>
+    // Lepas bukti dari draf CV.
     public void LepasBukti(string idBukti)
     {
         GameState gs = GameState.Instance;
@@ -83,7 +81,7 @@ public class CVSystem : MonoBehaviour
         gs.PanggilPerubahanState();
     }
 
-    /// <summary>Kosongkan draf (dipakai saat mulai permainan baru).</summary>
+    // Kosongkan draf (dipakai saat mulai permainan baru).
     public void ResetDraf()
     {
         GameState gs = GameState.Instance;
@@ -99,14 +97,14 @@ public class CVSystem : MonoBehaviour
     // Klaim berlebihan
     // ---------------------------------------------------------------
 
-    /// <summary>True kalau teks klaim itu termasuk klaim berlebihan.</summary>
+    // True kalau teks klaim itu termasuk klaim berlebihan.
     public static bool AdalahKlaimBerlebihan(string klaim)
     {
         if (string.IsNullOrEmpty(klaim)) return false;
         return klaim == Klaim1Berlebihan || klaim == Klaim2Berlebihan;
     }
 
-    /// <summary>True kalau draf CV sekarang punya klaim berlebihan.</summary>
+    // True kalau draf CV sekarang punya klaim berlebihan.
     public bool DraftPunyaKlaimBerlebihan()
     {
         GameState gs = GameState.Instance;
@@ -115,10 +113,8 @@ public class CVSystem : MonoBehaviour
         return AdalahKlaimBerlebihan(gs.klaimDraf[0]) || AdalahKlaimBerlebihan(gs.klaimDraf[1]);
     }
 
-    /// <summary>
-    /// True kalau snapshot lamaran punya klaim berlebihan yang belum dikoreksi.
-    /// Ini salah satu syarat agar tawaran diberikan.
-    /// </summary>
+    // True kalau snapshot lamaran punya klaim berlebihan yang belum dikoreksi.
+    // Ini salah satu syarat agar tawaran diberikan.
     public bool PunyaKlaimBerlebihan(SnapshotCV snapshot)
     {
         if (snapshot == null) return false;
@@ -130,12 +126,10 @@ public class CVSystem : MonoBehaviour
     // Mengirim lamaran
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Kirim lamaran ke perusahaan "A" atau "B".
-    /// Membuat salinan (snapshot) dari draf. Salinan ini tidak ikut berubah
-    /// walau nanti Raka mengedit drafnya lagi.
-    /// Return false kalau lamaran untuk perusahaan itu sudah pernah dikirim.
-    /// </summary>
+    // Kirim lamaran ke perusahaan "A" atau "B".
+    // Membuat salinan (snapshot) dari draf. Salinan ini tidak ikut berubah
+    // walau nanti Raka mengedit drafnya lagi.
+    // Return false kalau lamaran untuk perusahaan itu sudah pernah dikirim.
     public bool KirimLamaran(string perusahaan)
     {
         GameState gs = GameState.Instance;
@@ -163,14 +157,14 @@ public class CVSystem : MonoBehaviour
         return true;
     }
 
-    /// <summary>True kalau lamaran ke perusahaan itu sudah pernah dikirim.</summary>
+    // True kalau lamaran ke perusahaan itu sudah pernah dikirim.
     public bool SudahKirim(string perusahaan)
     {
         SnapshotCV snapshot = AmbilSnapshot(perusahaan);
         return snapshot != null && snapshot.terkirim;
     }
 
-    /// <summary>Ambil snapshot lamaran suatu perusahaan. null kalau belum dikirim.</summary>
+    // Ambil snapshot lamaran suatu perusahaan. null kalau belum dikirim.
     public SnapshotCV AmbilSnapshot(string perusahaan)
     {
         for (int i = 0; i < daftarLamaran.Count; i++)
@@ -180,13 +174,13 @@ public class CVSystem : MonoBehaviour
         return null;
     }
 
-    /// <summary>Semua snapshot lamaran (dipakai SaveSystem).</summary>
+    // Semua snapshot lamaran (dipakai SaveSystem).
     public List<SnapshotCV> AmbilDaftarLamaran()
     {
         return daftarLamaran;
     }
 
-    /// <summary>Isi daftar lamaran dari data save (dipakai SaveSystem).</summary>
+    // Isi daftar lamaran dari data save (dipakai SaveSystem).
     public void TerapkanDaftarLamaran(List<SnapshotCV> daftar)
     {
         daftarLamaran.Clear();

@@ -1,26 +1,22 @@
 using System;
 using UnityEngine;
 
-/// <summary>
-/// SimpleInventory.cs
-/// Tas Raka. Maksimal satu benda saja (biar sederhana dan sesuai naskah:
-/// satu puzzle butuh satu benda yang dibawa).
-///
-/// Benda diambil dari objek yang punya "Ambil Sebagai Benda" centang,
-/// lalu dipasang ke jangkar Retakan Ruang lewat tombol E.
-/// </summary>
+// SimpleInventory.cs
+// Tas Raka. Maksimal satu benda saja (biar sederhana dan sesuai naskah:
+// satu puzzle butuh satu benda yang dibawa).
+//
+// Benda diambil dari objek yang punya "Ambil Sebagai Benda" centang,
+// lalu dipasang ke jangkar Retakan Ruang lewat tombol E.
 public class SimpleInventory : MonoBehaviour
 {
-    /// <summary>Nama benda yang sedang dibawa. String kosong = tas kosong.</summary>
+    // Nama benda yang sedang dibawa. String kosong = tas kosong.
     public string bendaSaatIni = "";
 
-    /// <summary>Dipanggil setiap isi tas berubah (benda diambil atau dipasang).</summary>
+    // Dipanggil setiap isi tas berubah (benda diambil atau dipasang).
     public event Action<string> OnBendaBerubah;
 
-    /// <summary>
-    /// Ambil sebuah benda ke tas.
-    /// Return false kalau tas sudah berisi benda lain (maksimal 1).
-    /// </summary>
+    // Ambil sebuah benda ke tas.
+    // Return false kalau tas sudah berisi benda lain (maksimal 1).
     public bool AmbilBenda(string nama)
     {
         if (string.IsNullOrEmpty(nama)) return false;
@@ -31,37 +27,35 @@ public class SimpleInventory : MonoBehaviour
         return true;
     }
 
-    /// <summary>
-    /// Pakai / pasang benda yang sedang dibawa (dipakai PuzzleAnchor).
-    /// Setelah dipakai, tas jadi kosong.
-    /// </summary>
+    // Pakai / pasang benda yang sedang dibawa (dipakai PuzzleAnchor).
+    // Setelah dipakai, tas jadi kosong.
     public void PasangBenda()
     {
         bendaSaatIni = "";
         BeriTahu();
     }
 
-    /// <summary>Kosongkan tas (dipakai saat reset permainan).</summary>
+    // Kosongkan tas (dipakai saat reset permainan).
     public void Kosongkan()
     {
         bendaSaatIni = "";
         BeriTahu();
     }
 
-    /// <summary>Cek apakah Raka sedang membawa benda dengan nama tertentu.</summary>
+    // Cek apakah Raka sedang membawa benda dengan nama tertentu.
     public bool PunyaBenda(string nama)
     {
         return !string.IsNullOrEmpty(nama) && bendaSaatIni == nama;
     }
 
-    /// <summary>Isi tas langsung (dipakai SaveSystem saat memuat data).</summary>
+    // Isi tas langsung (dipakai SaveSystem saat memuat data).
     public void SetBenda(string nama)
     {
         bendaSaatIni = string.IsNullOrEmpty(nama) ? "" : nama;
         BeriTahu();
     }
 
-    /// <summary>True kalau tas sedang kosong.</summary>
+    // True kalau tas sedang kosong.
     public bool Kosong()
     {
         return string.IsNullOrEmpty(bendaSaatIni);

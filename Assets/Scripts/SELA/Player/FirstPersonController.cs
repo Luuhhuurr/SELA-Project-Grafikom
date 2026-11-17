@@ -2,27 +2,21 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-/// <summary>
-/// FirstPersonController.cs
-/// Menggerakkan pemain orang pertama: jalan WASD, menoleh dengan mouse,
-/// dan berinteraksi dengan benda di dekatnya memakai tombol E.
-///
-/// CATATAN PENTING:
-/// Project ini memakai Input System baru (UnityEngine.InputSystem), BUKAN
-/// Input.GetAxis yang lama. Jadi semua penekanan tombol dibaca lewat
-/// Keyboard.current dan Mouse.current. Selalu dicek null dulu, karena
-/// di kondisi tertentu (mis. sedang compile) device-nya bisa null.
-/// </summary>
+// FirstPersonController.cs
+// Menggerakkan pemain orang pertama: jalan WASD, menoleh dengan mouse,
+// dan berinteraksi dengan benda di dekatnya memakai tombol E.
+//
+// CATATAN PENTING:
+// Project ini memakai Input System baru (UnityEngine.InputSystem), BUKAN
+// Input.GetAxis yang lama. Jadi semua penekanan tombol dibaca lewat
+// Keyboard.current dan Mouse.current. Selalu dicek null dulu, karena
+// di kondisi tertentu (mis. sedang compile) device-nya bisa null.
 public class FirstPersonController : MonoBehaviour
 {
     [Header("Gerak")]
     public float kecepatanJalan = 2.2f;   // meter per detik
     public float tinggiKamera = 1.6f;    // tinggi kamera dari lantai (meter)
     public float fov = 70f;              // sudut pandang kamera
-
-    [Header("Mouse")]
-    public float sensitivitasMouse = 2f;
-    public bool invertY = false;         // true = bucks up dibalik
 
     [Header("Interaksi")]
     public float jarakInteraksi = 2f;    // jarak maksimum untuk tombol E
@@ -33,7 +27,7 @@ public class FirstPersonController : MonoBehaviour
 
     public static FirstPersonController Instance { get; private set; }
 
-    /// <summary>Prompt yang berubah tiap kali pemain melirik benda baru.</summary>
+    // Prompt yang berubah tiap kali pemain melirik benda baru.
     public event Action<string> OnPromptBerubah;
 
     private CharacterController karakter;
@@ -104,6 +98,9 @@ public class FirstPersonController : MonoBehaviour
         }
     }
 
+    // Ayunan kepala sengaja tidak dipakai. Kamera diam, biar pemain
+    // yang sensitif terhadap gerak nggak migrain.
+
     void OnDestroy()
     {
         if (Instance == this) Instance = null;
@@ -113,10 +110,8 @@ public class FirstPersonController : MonoBehaviour
     // Jalan WASD
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Baca tombol WASD lalu ubah jadi arahmovement relatif arah pandang.
-    /// ClampMagnitude dipakai supaya jalan diagonal tidak lebih cepat.
-    /// </summary>
+    // Baca tombol WASD lalu ubah jadi arahmovement relatif arah pandang.
+    // ClampMagnitude dipakai supaya jalan diagonal tidak lebih cepat.
     private Vector3 HitungArah()
     {
         Keyboard keyboard = Keyboard.current;
@@ -146,14 +141,14 @@ public class FirstPersonController : MonoBehaviour
         Vector2 delta = mouse.delta.ReadValue();
         if (delta.sqrMagnitude < 0.000001f) return;
 
-        float skala = sensitivitasMouse * 0.02f;
+        float skala = PengaturanGame.sensitivitasMouse * 0.02f;
 
         // Putar badan (yaw) ke kiri-kanan.
         transform.Rotate(0f, delta.x * skala, 0f);
 
         // Miring kepala (pitch) atas-bawah, dibatasi supaya tidak terbalik.
         float vertikal = delta.y * skala;
-        if (invertY) vertikal = -vertikal;
+        if (PengaturanGame.invertY) vertikal = -vertikal;
 
         sudutPuncak = Mathf.Clamp(sudutPuncak - vertikal, -85f, 85f);
         kepalaCamera.localRotation = Quaternion.Euler(sudutPuncak, 0f, 0f);
@@ -211,10 +206,8 @@ public class FirstPersonController : MonoBehaviour
     // Cursor
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Kunci atau lepaskan cursor mouse.
-    /// Dipakai UIManager, jadi UIManager tidak perlu menyentuh Cursor langsung.
-    /// </summary>
+    // Kunci atau lepaskan cursor mouse.
+    // Dipakai UIManager, jadi UIManager tidak perlu menyentuh Cursor langsung.
     public void SetCursor(bool terkunci)
     {
         if (terkunci)
@@ -255,9 +248,9 @@ public class FirstPersonController : MonoBehaviour
         Kecepatan Jalan  = 2.2  (meter/detik)
         Tinggi Kamera    = 1.6
         FOV              = 70
-        Sensitivitas Mouse = 2
-        Invert Y         = centang kalau ingin mouse terbalik
         Jarak Interaksi  = 2 (meter)
+      Sensitivitas mouse, invert Y, dan kurangi gerak diatur dari menu
+      Pengaturan di dalam game (lihat PengaturanGame.cs).
    8. Semua benda yang bisa disentuh WAJIB punya Collider, dan kalau
       bendanya ada di dalam GameObject lain, pakai
       GetComponentInParent (sudah ditangani script ini).

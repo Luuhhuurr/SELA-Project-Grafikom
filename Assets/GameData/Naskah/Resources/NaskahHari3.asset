@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf10ac204eb74897b6ff07a831088979, type: 3}
+  m_Name: NaskahHari3
+  m_EditorClassIdentifier: SELA.Runtime::NaskahData
+  hari: 3
+  judul: "Batas Lamaran dan Koperasi Pijar"
+  ringkasan: "Hari ketiga. Malam ini batas lamaran ke Studio Lajur. Dita juga mengirim lowongan Koperasi Pijar."
+  pengirim: "Dita"
+  pesanPembuka: "Studio Lajur udah buka lamaranmu, cuma minta portofolio dulu sebelum mau ngobrol. Batasnya malam ini ya, jangan sampai kelupaan. Ibu juga nanya, yang Akses Prima itu gimana?"
+  pesanLain:
+  - "Koperasi Pijar (15:05) — Kami membuka posisi Web Support. Gaji Rp3.800.000 per bulan, kontrak tiga bulan, 35 jam per minggu. Dokumen asli tidak diminta, fotokopi cukup. Batas pelamaran hari ke-5 malam."
+  - "Dita (15:20) — Yang Koperasi Pijar gajinya lebih kecil, tapi risikonya juga kecil. Nanti kamu bandingkan sendiri."
+  perusahaanLowongan: "Koperasi Pijar"
+  judulLowongan: "Web Support"
+  draftLowongan: "Dukung situs CMS koperasi dan jawab obrolan anggota. Rp3.800.000 per bulan, kontrak 3 bulan, 35 jam per minggu, 1 hari libur tambahan. Dokumen asli tidak diminta, cukup fotokopi."
+  batasLamaran: "Hari 5 malam"
+  syaratLamaran: "Portofolio antarmuka (E1) dan catatan uji (E2)"
+  catatanTambahan: "Batas lamaran ke Studio Lajur malam ini. Kalau mau kirim, kirim sebelum tidur."

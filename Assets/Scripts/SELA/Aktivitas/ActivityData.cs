@@ -1,21 +1,19 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// ActivityData.cs
-/// Deskripsi satu aktivitas (kegiatan) yang bisa dipilih Raka.
-///
-/// Ini adalah ScriptableObject, jadi datanya disimpan sebagai asset (.asset)
-/// di dalam project, bukan di dalam GameObject. Kalau datanya diubah,
-/// asset ikut berubah dan tidak perlu compile ulang.
-///
-/// Cara membuat asset baru:
-///   Assets > Create > SELA > Aktivitas
-/// </summary>
+// ActivityData.cs
+// Deskripsi satu aktivitas (kegiatan) yang bisa dipilih Raka.
+//
+// Ini adalah ScriptableObject, jadi datanya disimpan sebagai asset (.asset)
+// di dalam project, bukan di dalam GameObject. Kalau datanya diubah,
+// asset ikut berubah dan tidak perlu compile ulang.
+//
+// Cara membuat asset baru:
+// Assets > Create > SELA > Aktivitas
 [CreateAssetMenu(fileName = "AktivitasBaru", menuName = "SELA/Aktivitas", order = 1)]
 public class ActivityData : ScriptableObject
 {
-    /// <summary>Jenis aktivitas. menentukan efek tambahan saat dijalankan.</summary>
+    // Jenis aktivitas. menentukan efek tambahan saat dijalankan.
     public enum Tipe
     {
         Biasa,        // tidak ada efek khusus
@@ -46,6 +44,9 @@ public class ActivityData : ScriptableObject
 
     [Tooltip("Aktivitas ini baru bisa dijalankan mulai hari ke berapa.")]
     public int hariMinimal = 1;
+
+    [Tooltip("Hari paling akhir aktivitas ini masih bisa dijalankan. 0 = tidak ada batas.")]
+    public int hariMaks = 0;
 
     [Tooltip("Centang kalau aktivitas ini hanya bisa dilakukan satu kali sepanjang game.")]
     public bool hanyaSekali = true;

@@ -2,14 +2,12 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// GameState.cs
-/// Menyimpan SEMUA data permainan SELA: hari, sesi, tenaga, tekanan,
-/// bukti, status lamaran, pilihan tawaran, dan progres Retakan Ruang.
-///
-/// GameState adalah Singleton. Semua script lain membaca dan menulis data
-/// lewat GameState.Instance, jadi tidak perlu FindObjectOfType sama sekali.
-/// </summary>
+// GameState.cs
+// Menyimpan SEMUA data permainan SELA: hari, sesi, tenaga, tekanan,
+// bukti, status lamaran, pilihan tawaran, dan progres Retakan Ruang.
+//
+// GameState adalah Singleton. Semua script lain membaca dan menulis data
+// lewat GameState.Instance, jadi tidak perlu FindObjectOfType sama sekali.
 public class GameState : MonoBehaviour
 {
     // ---------------------------------------------------------------
@@ -72,10 +70,8 @@ public class GameState : MonoBehaviour
     public event Action<string> OnNotifikasi;
     public event Action OnJedaTerbuka;
 
-    /// <summary>
-    /// Penanda internal: sesi Malam sudah dipakai sehingga hari sudah
-    /// berganti sendiri. Dipakai supaya Tidur() tidak menambah hari 2x.
-    /// </summary>
+    // Penanda internal: sesi Malam sudah dipakai sehingga hari sudah
+    // berganti sendiri. Dipakai supaya Tidur() tidak menambah hari 2x.
     public bool rolloverMalamTerjadi = false;
 
     void Awake()
@@ -83,6 +79,9 @@ public class GameState : MonoBehaviour
         // Kalau somehow ada dua GameState, buang yang kedua.
         if (Instance != null && Instance != this)
         {
+            // Dimatikan dulu, supaya Start() (yang memuat save) tidak jalan
+            // di GameState yang lagi dibuang.
+            gameObject.SetActive(false);
             Destroy(gameObject);
             return;
         }
@@ -112,11 +111,9 @@ public class GameState : MonoBehaviour
     // Pengisian referensi sistem
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Semua sistem (SessionManager, ActivitySystem, dan friends) diletakkan
-    /// pada GameObject yang sama dengan GameState, jadi bisa diambil
-    /// otomatis lewat GetComponent. Kalau mau manual, isi lewat Inspector.
-    /// </summary>
+    // Semua sistem (SessionManager, ActivitySystem, dan friends) diletakkan
+    // pada GameObject yang sama dengan GameState, jadi bisa diambil
+    // otomatis lewat GetComponent. Kalau mau manual, isi lewat Inspector.
     void IsiReferensiSistem()
     {
         if (sesiManager == null) sesiManager = GetComponent<SessionManager>();
@@ -130,17 +127,15 @@ public class GameState : MonoBehaviour
     // Method mengubah state
     // ---------------------------------------------------------------
 
-    /// <summary>Tambah atau kurangi tenaga. Nilai selalu dijaga di rentang 0-4.</summary>
+    // Tambah atau kurangi tenaga. Nilai selalu dijaga di rentang 0-4.
     public void UbahTenaga(int nilai)
     {
         tenaga = Mathf.Clamp(tenaga + nilai, 0, 4);
         PanggilPerubahanState();
     }
 
-    /// <summary>
-    /// Tambah atau kurangi tekanan. Nilai selalu dijaga di rentang 0-6.
-    /// Kalau tekanan menyentuh 6, sistem jeda akan terbuka (sekali per hari).
-    /// </summary>
+    // Tambah atau kurangi tekanan. Nilai selalu dijaga di rentang 0-6.
+    // Kalau tekanan menyentuh 6, sistem jeda akan terbuka (sekali per hari).
     public void UbahTekanan(int nilai)
     {
         tekanan = Mathf.Clamp(tekanan + nilai, 0, 6);
@@ -153,7 +148,7 @@ public class GameState : MonoBehaviour
         }
     }
 
-    /// <summary>Tambah kartu bukti (E0 / E1 / E2). Kalau sudah ada, tidak diulang.</summary>
+    // Tambah kartu bukti (E0 / E1 / E2). Kalau sudah ada, tidak diulang.
     public void TambahBukti(string idBukti)
     {
         if (string.IsNullOrEmpty(idBukti)) return;
@@ -163,17 +158,15 @@ public class GameState : MonoBehaviour
         PanggilPerubahanState();
     }
 
-    /// <summary>Cek apakah Raka sudah memegang bukti tertentu.</summary>
+    // Cek apakah Raka sudah memegang bukti tertentu.
     public bool PunyaBukti(string idBukti)
     {
         return bukti.Contains(idBukti);
     }
 
-    /// <summary>
-    /// Geser sesi: Pagi -> Siang -> Malam -> (hari berikutnya) Pagi.
-    /// Satu aktivitas = satu sesi, jadi method ini dipanggil setiap selesai
-    /// satu aktivitas.
-    /// </summary>
+    // Geser sesi: Pagi -> Siang -> Malam -> (hari berikutnya) Pagi.
+    // Satu aktivitas = satu sesi, jadi method ini dipanggil setiap selesai
+    // satu aktivitas.
     public void GantiSesi()
     {
         if (sesi == Sesi.Pagi)
@@ -196,10 +189,8 @@ public class GameState : MonoBehaviour
         PanggilPerubahanState();
     }
 
-    /// <summary>
-    /// Tidur: memulihkan tenaga (+2) dan menurunkan tekanan (-1), lalu
-    /// menutup hari dan pindah ke sesi Pagi hari berikutnya.
-    /// </summary>
+    // Tidur: memulihkan tenaga (+2) dan menurunkan tekanan (-1), lalu
+    // menutup hari dan pindah ke sesi Pagi hari berikutnya.
     public void Tidur()
     {
         UbahTenaga(2);
@@ -219,14 +210,14 @@ public class GameState : MonoBehaviour
         PanggilPerubahanState();
     }
 
-    /// <summary>Pemain memilih tawaran A / B / C / Tidak ada (BAB VI).</summary>
+    // Pemain memilih tawaran A / B / C / Tidak ada (BAB VI).
     public void PilihTawaran(PilihanTawaran pilihan)
     {
         pilihanTawaran = pilihan;
         PanggilPerubahanState();
     }
 
-    /// <summary>Dipakai UIManager saat pemain menekan tombol "Lanjut" pada jeda.</summary>
+    // Dipakai UIManager saat pemain menekan tombol "Lanjut" pada jeda.
     public void TutupJeda()
     {
         if (tekanan > 4) tekanan = 4;
@@ -234,7 +225,7 @@ public class GameState : MonoBehaviour
         PanggilPerubahanState();
     }
 
-    /// <summary>Kembalikan semua data ke kondisi awal (mulai permainan baru).</summary>
+    // Kembalikan semua data ke kondisi awal (mulai permainan baru).
     public void ResetSeluruhState()
     {
         hari = 1;
@@ -257,11 +248,12 @@ public class GameState : MonoBehaviour
 
         if (cvSystem != null) cvSystem.ResetDraf();
         if (inventory != null) inventory.Kosongkan();
+        if (activitySystem != null) activitySystem.ResetRiwayat();
 
         PanggilPerubahanState();
     }
 
-    /// <summary>Status lamaran untuk perusahaan "A" atau "B".</summary>
+    // Status lamaran untuk perusahaan "A" atau "B".
     public StatusLamaran AmbilStatusLamaran(string perusahaan)
     {
         if (perusahaan == "A") return statusLamaranA;
@@ -269,7 +261,7 @@ public class GameState : MonoBehaviour
         return StatusLamaran.BelumDikirim;
     }
 
-    /// <summary>Catat hari interview untuk perusahaan "A" atau "B".</summary>
+    // Catat hari interview untuk perusahaan "A" atau "B".
     public void SetJadwalInterview(string perusahaan, int hariInterview)
     {
         if (perusahaan == "A") jadwalInterviewA = hariInterview;
@@ -277,7 +269,7 @@ public class GameState : MonoBehaviour
         PanggilPerubahanState();
     }
 
-    /// <summary>Hari interview untuk perusahaan "A" atau "B". 0 = belum dijadwalkan.</summary>
+    // Hari interview untuk perusahaan "A" atau "B". 0 = belum dijadwalkan.
     public int AmbilJadwalInterview(string perusahaan)
     {
         if (perusahaan == "A") return jadwalInterviewA;
@@ -285,7 +277,7 @@ public class GameState : MonoBehaviour
         return 0;
     }
 
-    /// <summary>Ubah status lamaran untuk perusahaan "A" atau "B".</summary>
+    // Ubah status lamaran untuk perusahaan "A" atau "B".
     public void SetStatusLamaran(string perusahaan, StatusLamaran status)
     {
         if (perusahaan == "A") statusLamaranA = status;
@@ -293,13 +285,13 @@ public class GameState : MonoBehaviour
         PanggilPerubahanState();
     }
 
-    /// <summary>Beri tahu semua pendengar bahwa state berubah (dipakai UI).</summary>
+    // Beri tahu semua pendengar bahwa state berubah (dipakai UI).
     public void PanggilPerubahanState()
     {
         if (OnStateChanged != null) OnStateChanged();
     }
 
-    /// <summary>Tampilkan pesan singkat ke pemain.</summary>
+    // Tampilkan pesan singkat ke pemain.
     public void KirimNotifikasi(string pesan)
     {
         if (OnNotifikasi != null) OnNotifikasi(pesan);

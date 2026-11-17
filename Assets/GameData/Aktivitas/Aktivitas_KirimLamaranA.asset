@@ -20,6 +20,7 @@ MonoBehaviour:
   syaratBukti:
   - E1
   hariMinimal: 1
+  hariMaks: 3
   hanyaSekali: 1
   sekaliPerHari: 0
   hasil: 

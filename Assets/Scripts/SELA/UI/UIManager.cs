@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using TMPro;
@@ -7,32 +8,34 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-/// <summary>
-/// UIManager.cs
-/// Mengatur semua tampilan layar game SELA (uGUI + TextMeshPro).
-///
-/// Panel yang dikelola:
-///   PanelHUD              -> hari, sesi, tenaga, tekanan, bukti, retakan
-///   PanelPrompt           -> tulisan "[E] Ambil Kartu" di tengah bawah
-///   PanelNotifikasi       -> pesan singkat yang muncul sebentar
-///   PanelDialog           -> percakapan interview
-///   PanelCatatan          -> buku catatan Raka (dibuka dengan Tab)
-///   PanelLaptop           -> laptop (dibuka dengan L), 3 tab
-///   PanelKonfirmasiAktivitas -> konfirmasi biaya sebelum aktivitas jalan
-///   PanelPause            -> menu (dibuka dengan Esc)
-///   PanelJeda             -> jeda saat tekanan mencapai 6
-///   PanelPilihanFinal     -> pilihan kontrak A / B / C / tidak ada
-///   PanelPeringatanC      -> peringatan khusus tawaran C
-///   PanelEnding           -> cerita akhir + pertanyaan refleksi
-///   PanelMenuAwal         -> main menu saat game baru dibuka
-///   PanelInfoKonten       -> layar info konten (disclaimer + kontrol)
-///
-/// Semua panel dicari otomatis lewat NAMA GameObject-nya, jadi tidak perlu
-/// drag satu per satu di Inspector (tapi tetap bisa diisi manual).
-///
-/// CATATAN INPUT: project ini memakai Input System baru, jadi tombol
-/// dibaca dari Keyboard.current, bukan Input.GetKeyDown yang lama.
-/// </summary>
+// UIManager.cs
+// Mengatur semua tampilan layar game SELA (uGUI + TextMeshPro).
+//
+// Panel yang dikelola:
+// PanelHUD              -> hari, sesi, tenaga, tekanan, bukti, retakan
+// PanelPrompt           -> tulisan "[E] Ambil Kartu" di tengah bawah
+// PanelNotifikasi       -> pesan singkat yang muncul sebentar
+// PanelDialog           -> percakapan interview
+// PanelCatatan          -> buku catatan Raka (dibuka dengan Tab)
+// PanelLaptop           -> laptop (dibuka dengan L), 3 tab
+// PanelKonfirmasiAktivitas -> konfirmasi biaya sebelum aktivitas jalan
+// PanelPause            -> menu (dibuka dengan Esc)
+// PanelJeda             -> jeda saat tekanan mencapai 6
+// PanelPilihanFinal     -> pilihan kontrak A / B / C / tidak ada
+// PanelPeringatanC      -> peringatan khusus tawaran C
+// PanelEnding           -> cerita akhir + pertanyaan refleksi
+// PanelMenuAwal         -> main menu saat game baru dibuka
+// PanelInfoKonten       -> layar info konten (disclaimer + kontrol)
+// PanelRakitCV          -> pilih klaim CV dan pasang bukti
+// PanelVerifikasi       -> cek empat aspek lowongan
+// PanelPengaturan       -> ukuran teks, sensitivitas, invert Y
+// PanelCredits          -> credits dan sumber
+//
+// Semua panel dicari otomatis lewat NAMA GameObject-nya, jadi tidak perlu
+// drag satu per satu di Inspector (tapi tetap bisa diisi manual).
+//
+// CATATAN INPUT: project ini memakai Input System baru, jadi tombol
+// dibaca dari Keyboard.current, bukan Input.GetKeyDown yang lama.
 public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
@@ -62,6 +65,10 @@ public class UIManager : MonoBehaviour
     public GameObject panelEnding;
     public GameObject panelMenuAwal;
     public GameObject panelInfoKonten;
+    public GameObject panelRakitCV;
+    public GameObject panelVerifikasi;
+    public GameObject panelPengaturan;
+    public GameObject panelCredits;
 
     // ---------------------------------------------------------------
     // Teks (cari otomatis by nama kalau kosong)
@@ -83,6 +90,10 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI teksEnding;
     public TextMeshProUGUI teksMenuAwal;
     public TextMeshProUGUI teksInfoKonten;
+    public TextMeshProUGUI teksRakitCV;
+    public TextMeshProUGUI teksVerifikasi;
+    public TextMeshProUGUI teksPengaturan;
+    public TextMeshProUGUI teksCredits;
 
     // ---------------------------------------------------------------
     // Wadah dinamis
@@ -92,14 +103,15 @@ public class UIManager : MonoBehaviour
     public RectTransform wadahOpsiDialog;
     public RectTransform wadahAktivitas;
     public RectTransform wadahPilihanFinal;
+    public RectTransform wadahPilihanCV;
+    public RectTransform wadahPengaturan;
 
     // ---------------------------------------------------------------
     // Tombol yang dibuat manual di scene
     // ---------------------------------------------------------------
 
     [Header("Tombol")]
-    public Button tombolLanjutDialog;
-    public Button tombolKonfirmasiYa;
+    public Button tombolLanjutDialog;    public Button tombolKonfirmasiYa;
     public Button tombolKonfirmasiBatal;
     public Button tombolJedaLanjut;
     public Button tombolPeringatanYakin;
@@ -108,6 +120,41 @@ public class UIManager : MonoBehaviour
     public Button tombolPauseSimpan;
     public Button tombolPauseMulaiUlang;
     public Button tombolPauseKeluar;
+    public Button tombolRakitCV;
+    public Button tombolTutupRakitCV;
+    public Button tombolVerifikasiSudah;
+    public Button tombolVerifikasiBatal;
+    public Button tombolTutupCredits;
+    public Button tombolTutupPengaturan;
+    public Button tombolKembaliMenu;
+
+    // ---------------------------------------------------------------
+    // Isi layar credits. Bisa diubah langsung di Inspector.
+    // ---------------------------------------------------------------
+
+    [Header("Isi Credits")]
+    [TextArea(10, 30)]
+    public string teksCreditsPanel =
+        "SELA\n\n"
+        + "Game naratif first-person 3D tentang Raka yang mencari kerja\n"
+        + "dalam tujuh hari terakhir sewa kosnya.\n\n"
+        + "Tugas mata kuliah Grafika Komputer\n"
+        + "Teknik Informatika - Semester 5\n"
+        + "Kelompok VI\n\n"
+        + "--- pembagian tugas ---\n"
+        + "Luhur Pangaribowo Handaruji - naratif dan UI\n"
+        + "[nama anggota] - [bagian]\n\n"
+        + "--- yang dipakai ---\n"
+        + "Unity 6 LTS + URP\n"
+        + "uGUI + TextMeshPro\n"
+        + "Input System\n"
+        + "ScriptableObject untuk data naskah dan aktivitas\n"
+        + "JsonUtility untuk save/load\n\n"
+        + "--- sumber ---\n"
+        + "Game Design Document oleh kelompok\n"
+        + "Naskah Game oleh kelompok\n\n"
+        + "SELA ini fiksi. Perusahaan, kontrak, dan nama yang muncul di\n"
+        + "dalam game tidak merujuk orang sungguhan.";
 
     // ---------------------------------------------------------------
     // Keadaan internal
@@ -122,6 +169,21 @@ public class UIManager : MonoBehaviour
 
     // True kalau pemain sudah menekan "Mulai Game" di menu awal.
     private bool gameSudahMulai = false;
+
+    // Aktivitas yang sedang dicek lowongannya (dipakai panel Verifikasi).
+    private ActivityData aktivitasVerifikasi = null;
+
+    // Wadah tombol menu awal (dibuat lewat kode).
+    private RectTransform wadahTombolMenu = null;
+
+    // Warna asli teks notifikasi, dipakai buat animasi muncul.
+    private Color warnaNotifikasiAwal = new Color(1f, 1f, 1f, 1f);
+    private bool warnaNotifikasiTercatat = false;
+
+    // Ukuran teks asli tiap label. Dipakai buat menyetel ukuran teks dari
+    // menu Pengaturan. Nilai fontSize di TMP dalam pixel, jadi harus
+    // dikalikan, bukan ditambah.
+    private Dictionary<TextMeshProUGUI, float> ukuranTeksAwal = new Dictionary<TextMeshProUGUI, float>();
 
     // ---------------------------------------------------------------
     // Setup
@@ -291,6 +353,10 @@ public class UIManager : MonoBehaviour
         panelEnding = CariPanel("PanelEnding", panelEnding);
         panelMenuAwal = CariPanel("PanelMenuAwal", panelMenuAwal);
         panelInfoKonten = CariPanel("PanelInfoKonten", panelInfoKonten);
+        panelRakitCV = CariPanel("PanelRakitCV", panelRakitCV);
+        panelVerifikasi = CariPanel("PanelVerifikasi", panelVerifikasi);
+        panelPengaturan = CariPanel("PanelPengaturan", panelPengaturan);
+        panelCredits = CariPanel("PanelCredits", panelCredits);
     }
 
     private GameObject CariPanel(string nama, GameObject sekarang)
@@ -324,6 +390,10 @@ public class UIManager : MonoBehaviour
         teksEnding = CariTeks(panelEnding, "Teks", teksEnding);
         teksMenuAwal = CariTeks(panelMenuAwal, "Teks", teksMenuAwal);
         teksInfoKonten = CariTeks(panelInfoKonten, "Teks", teksInfoKonten);
+        teksRakitCV = CariTeks(panelRakitCV, "Teks", teksRakitCV);
+        teksVerifikasi = CariTeks(panelVerifikasi, "Teks", teksVerifikasi);
+        teksPengaturan = CariTeks(panelPengaturan, "Teks", teksPengaturan);
+        teksCredits = CariTeks(panelCredits, "Teks", teksCredits);
     }
 
     private TextMeshProUGUI CariTeks(GameObject panel, string nama, TextMeshProUGUI sekarang)
@@ -359,6 +429,10 @@ public class UIManager : MonoBehaviour
         daftarPanelModal.Add(panelPilihanFinal);
         daftarPanelModal.Add(panelPeringatanC);
         daftarPanelModal.Add(panelEnding);
+        daftarPanelModal.Add(panelRakitCV);
+        daftarPanelModal.Add(panelVerifikasi);
+        daftarPanelModal.Add(panelPengaturan);
+        daftarPanelModal.Add(panelCredits);
     }
 
     private void SiapkanTombol()
@@ -373,6 +447,13 @@ public class UIManager : MonoBehaviour
         if (tombolPauseSimpan != null) tombolPauseSimpan.onClick.AddListener(SimpanManual);
         if (tombolPauseMulaiUlang != null) tombolPauseMulaiUlang.onClick.AddListener(MulaiUlang);
         if (tombolPauseKeluar != null) tombolPauseKeluar.onClick.AddListener(KeluarGame);
+        if (tombolRakitCV != null) tombolRakitCV.onClick.AddListener(BukaPanelRakitCV);
+        if (tombolTutupRakitCV != null) tombolTutupRakitCV.onClick.AddListener(TutupPanelRakitCV);
+        if (tombolVerifikasiSudah != null) tombolVerifikasiSudah.onClick.AddListener(SelesaikanVerifikasi);
+        if (tombolVerifikasiBatal != null) tombolVerifikasiBatal.onClick.AddListener(TutupPanelVerifikasi);
+        if (tombolTutupCredits != null) tombolTutupCredits.onClick.AddListener(TutupPanelCredits);
+        if (tombolTutupPengaturan != null) tombolTutupPengaturan.onClick.AddListener(TutupPanelPengaturan);
+        if (tombolKembaliMenu != null) tombolKembaliMenu.onClick.AddListener(KembaliKeMenu);
     }
 
     // ---------------------------------------------------------------
@@ -408,6 +489,10 @@ public class UIManager : MonoBehaviour
             }
             return;
         }
+
+        // Malam terakhir: panel lain jangan dibuka, tinggal pilih tawaran.
+        if (panelPilihanFinal != null && panelPilihanFinal.activeSelf) return;
+        if (panelEnding != null && panelEnding.activeSelf) return;
 
         // Tab = buka / tutup buku catatan
         if (keyboard.tabKey.wasPressedThisFrame)
@@ -474,6 +559,8 @@ public class UIManager : MonoBehaviour
         if (!gameSudahMulai)
         {
             if (panelInfoKonten != null && panelInfoKonten.activeSelf) TutupInfoKonten();
+            if (panelCredits != null && panelCredits.activeSelf) TutupPanelCredits();
+            if (panelPengaturan != null && panelPengaturan.activeSelf) TutupPanelPengaturan();
             return;
         }
 
@@ -481,9 +568,15 @@ public class UIManager : MonoBehaviour
         if (panelPeringatanC != null && panelPeringatanC.activeSelf) { TutupPanelPeringatanC(); return; }
         if (panelDialog != null && panelDialog.activeSelf) { TutupPanelDialog(); return; }
         if (panelKonfirmasi != null && panelKonfirmasi.activeSelf) { TutupPanelKonfirmasi(); return; }
+        if (panelVerifikasi != null && panelVerifikasi.activeSelf) { TutupPanelVerifikasi(); return; }
+        if (panelRakitCV != null && panelRakitCV.activeSelf) { TutupPanelRakitCV(); return; }
+        if (panelPengaturan != null && panelPengaturan.activeSelf) { TutupPanelPengaturan(); return; }
+        if (panelCredits != null && panelCredits.activeSelf) { TutupPanelCredits(); return; }
         if (panelLaptop != null && panelLaptop.activeSelf) { TutupPanelLaptop(); return; }
         if (panelCatatan != null && panelCatatan.activeSelf) { TutupPanelCatatan(); return; }
-        if (panelPilihanFinal != null && panelPilihanFinal.activeSelf) { TutupPilihanFinal(); return; }
+
+        // Panel malam terakhir dan panel ending nggak bisa ditutup dengan Esc.
+        if (panelPilihanFinal != null && panelPilihanFinal.activeSelf) return;
         if (panelEnding != null && panelEnding.activeSelf) return;
 
         if (panelPause != null && panelPause.activeSelf) TutupSemuaPanel();
@@ -510,7 +603,7 @@ public class UIManager : MonoBehaviour
         PerbaruiStatusPemain();
     }
 
-    /// <summary>Tutup semua panel modal sekaligus (dipakai menu Pause).</summary>
+    // Tutup semua panel modal sekaligus (dipakai menu Pause).
     public void TutupSemuaPanel()
     {
         for (int i = 0; i < daftarPanelModal.Count; i++)
@@ -520,10 +613,8 @@ public class UIManager : MonoBehaviour
         PerbaruiStatusPemain();
     }
 
-    /// <summary>
-    /// Kalau ada panel modal terbuka, pemain tidak boleh jalan dan mouse
-    /// harus dilepas. Dipanggil setiap kali panel buka/tutup.
-    /// </summary>
+    // Kalau ada panel modal terbuka, pemain tidak boleh jalan dan mouse
+    // harus dilepas. Dipanggil setiap kali panel buka/tutup.
     private void PerbaruiStatusPemain()
     {
         bool adaPanelTerbuka = false;
@@ -548,11 +639,9 @@ public class UIManager : MonoBehaviour
     // Menu awal + layar info konten
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Siapkan panel menu awal dan layar info konten.
-    /// Kalau panelnya sudah ada di scene, dipakai apa adanya.
-    /// Kalau belum ada, dibuat lewat kode di sini.
-    /// </summary>
+    // Siapkan panel menu awal dan layar info konten.
+    // Kalau panelnya sudah ada di scene, dipakai apa adanya.
+    // Kalau belum ada, dibuat lewat kode di sini.
     private void SiapkanMenuAwal()
     {
         if (panelMenuAwal == null)
@@ -573,14 +662,16 @@ public class UIManager : MonoBehaviour
             teksInfoKonten = BuatTeksLayar(panelInfoKonten, "Teks", "", 19f, TextAlignmentOptions.TopLeft);
         }
 
-        // Tombol menu dibuat lewat kode supaya tidak perlu drag di Inspector.
-        if (panelMenuAwal.transform.Find("DaftarTombol") == null
-            || panelMenuAwal.transform.Find("DaftarTombol").childCount == 0)
+        // Wadah tombol menu. Tombolnya sendiri dibuat ulang tiap kali
+        // menu ditampilkan, soalnya "Lanjutkan" cuma muncul kalau ada save.
+        Transform wadahLama = panelMenuAwal.transform.Find("DaftarTombol");
+        if (wadahLama == null)
         {
-            RectTransform wadah = BuatWadahTombol(panelMenuAwal, "DaftarTombol");
-            BuatTombol(wadah, "Mulai Game", delegate { MulaiGame(); });
-            BuatTombol(wadah, "Info Konten", delegate { TampilkanInfoKonten(); });
-            BuatTombol(wadah, "Keluar Game", delegate { KeluarGame(); });
+            wadahTombolMenu = BuatWadahTombol(panelMenuAwal, "DaftarTombol");
+        }
+        else
+        {
+            wadahTombolMenu = wadahLama as RectTransform;
         }
 
         if (panelInfoKonten.transform.Find("DaftarTombol") == null
@@ -591,7 +682,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    /// <summary>Tampilkan menu awal dan kunci pergerakan pemain.</summary>
+    // Tampilkan menu awal dan kunci pergerakan pemain.
     private void TampilkanMenuAwal()
     {
         gameSudahMulai = false;
@@ -602,20 +693,45 @@ public class UIManager : MonoBehaviour
                               + "Raka, 23 tahun. Tujuh hari sebelum sewa kos berakhir,\n"
                               + "sambil mencari kerja.\n\n"
                               + "Grafika Komputer - Kelompok VI";
-
-            if (SaveSystem.AdaSave())
-            {
-                teksMenuAwal.text += "\n\n(ada save, permainan dilanjutkan dari hari terakhir)";
-            }
         }
 
+        BangunTombolMenu();
+
         if (panelInfoKonten != null) panelInfoKonten.SetActive(false);
+        if (panelCredits != null) panelCredits.SetActive(false);
+        if (panelPengaturan != null) panelPengaturan.SetActive(false);
         if (panelMenuAwal != null) panelMenuAwal.SetActive(true);
 
         PerbaruiStatusPemain();
     }
 
-    /// <summary>Pemain menekan "Mulai Game": menu ditutup, permainan jalan.</summary>
+    // Buat ulang daftar tombol menu awal.
+    private void BangunTombolMenu()
+    {
+        if (wadahTombolMenu == null) return;
+
+        for (int i = wadahTombolMenu.childCount - 1; i >= 0; i--)
+        {
+            GameObject go = wadahTombolMenu.GetChild(i).gameObject;
+            if (go == null) continue;
+            Destroy(go);
+        }
+
+        if (SaveSystem.AdaSave())
+        {
+            BuatTombol(wadahTombolMenu, "Lanjutkan", delegate { Lanjutkan(); });
+        }
+
+        BuatTombol(wadahTombolMenu, "Mulai Baru", delegate { MulaiBaru(); });
+        BuatTombol(wadahTombolMenu, "Info Konten", delegate { TampilkanInfoKonten(); });
+        BuatTombol(wadahTombolMenu, "Pengaturan", delegate { BukaPanelPengaturan(); });
+        BuatTombol(wadahTombolMenu, "Credits dan Sumber", delegate { BukaPanelCredits(); });
+        BuatTombol(wadahTombolMenu, "Keluar Game", delegate { KeluarGame(); });
+
+        TerapkanUkuranTeks();
+    }
+
+    // Pemain menekan "Mulai Game": menu ditutup, permainan jalan.
     public void MulaiGame()
     {
         gameSudahMulai = true;
@@ -627,7 +743,34 @@ public class UIManager : MonoBehaviour
         PerbaruiHUD();
     }
 
-    /// <summary>Buka layar info konten (disclaimer + kontrol).</summary>
+    // Lanjut dari save yang ada. Save-nya sendiri sudah dimuat otomatis
+    // waktu game baru dibuka, jadi di sini cuma muat ulang lalu mulai.
+    public void Lanjutkan()
+    {
+        SaveSystem.Muat();
+        MulaiGame();
+    }
+
+    // Mulai dari nol: hapus save lama, reset semua state.
+    public void MulaiBaru()
+    {
+        GameState gs = GameState.Instance;
+        if (gs != null) gs.ResetSeluruhState();
+
+        SaveSystem.HapusSave();
+
+        MulaiGame();
+        TampilkanNotifikasi("Permainan baru. Hari 1, sesi pagi.");
+    }
+
+    // Kembali ke menu awal (dipakai dari panel ending).
+    public void KembaliKeMenu()
+    {
+        TutupSemuaPanel();
+        TampilkanMenuAwal();
+    }
+
+    // Buka layar info konten (disclaimer + kontrol).
     private void TampilkanInfoKonten()
     {
         if (teksInfoKonten != null)
@@ -654,7 +797,7 @@ public class UIManager : MonoBehaviour
         PerbaruiStatusPemain();
     }
 
-    /// <summary>Tutup layar info konten dan kembali ke menu awal.</summary>
+    // Tutup layar info konten dan kembali ke menu awal.
     private void TutupInfoKonten()
     {
         if (panelInfoKonten != null) panelInfoKonten.SetActive(false);
@@ -665,6 +808,323 @@ public class UIManager : MonoBehaviour
         }
 
         PerbaruiStatusPemain();
+    }
+
+    // ---------------------------------------------------------------
+    // Rakit CV: pilih klaim dan pasang bukti
+    // ---------------------------------------------------------------
+
+    public void BukaPanelRakitCV()
+    {
+        if (teksRakitCV != null) teksRakitCV.text = BuildTeksRakitCV();
+        BangunTombolRakitCV();
+
+        if (panelLaptop != null) panelLaptop.SetActive(false);
+        BukaPanel(panelRakitCV);
+    }
+
+    private void TutupPanelRakitCV()
+    {
+        TutupPanel(panelRakitCV);
+
+        if (!gameSudahMulai && panelMenuAwal != null) panelMenuAwal.SetActive(true);
+    }
+
+    private string BuildTeksRakitCV()
+    {
+        GameState gs = GameState.Instance;
+        if (gs == null) return "";
+
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("RAKIT CV");
+        sb.AppendLine();
+        sb.AppendLine("Klaim 1 : " + (string.IsNullOrEmpty(gs.klaimDraf[0]) ? "(belum dipilih)" : gs.klaimDraf[0]));
+        sb.AppendLine("Klaim 2 : " + (string.IsNullOrEmpty(gs.klaimDraf[1]) ? "(belum dipilih)" : gs.klaimDraf[1]));
+        sb.AppendLine("Bukti   : " + BuktiKeTeks(gs.buktiTerpasang));
+        sb.AppendLine();
+        sb.AppendLine("Pilih klaim di bawah, lalu pasang bukti yang mau dikirim.");
+        sb.AppendLine("Begitu lamaran dikirim, CV-nya dikunci dan nggak bisa diubah lagi.");
+
+        return sb.ToString();
+    }
+
+    private void BangunTombolRakitCV()
+    {
+        if (wadahPilihanCV == null) return;
+
+        for (int i = wadahPilihanCV.childCount - 1; i >= 0; i--)
+        {
+            GameObject go = wadahPilihanCV.GetChild(i).gameObject;
+            if (go == null) continue;
+            Destroy(go);
+        }
+
+        GameState gs = GameState.Instance;
+        if (gs == null || gs.cvSystem == null) return;
+
+        BuatTombol(wadahPilihanCV, "Klaim 1: " + CVSystem.Klaim1Sesuai,
+                   delegate { PilihKlaim(1, CVSystem.Klaim1Sesuai); });
+        BuatTombol(wadahPilihanCV, "Klaim 1: " + CVSystem.Klaim1Berlebihan,
+                   delegate { PilihKlaim(1, CVSystem.Klaim1Berlebihan); });
+        BuatTombol(wadahPilihanCV, "Klaim 2: " + CVSystem.Klaim2Sesuai,
+                   delegate { PilihKlaim(2, CVSystem.Klaim2Sesuai); });
+        BuatTombol(wadahPilihanCV, "Klaim 2: " + CVSystem.Klaim2Berlebihan,
+                   delegate { PilihKlaim(2, CVSystem.Klaim2Berlebihan); });
+
+        // Bukti yang Raka punya sekarang.
+        for (int i = 0; i < gs.bukti.Count; i++)
+        {
+            string id = gs.bukti[i];
+            bool terpasang = gs.buktiTerpasang.Contains(id);
+
+            string label = id + " - " + NamaBukti(id);
+            if (terpasang) label += "   [terpasang, klik buat lepas]";
+
+            BuatTombol(wadahPilihanCV, label, delegate { ToggleBukti(id); });
+        }
+
+        TerapkanUkuranTeks();
+    }
+
+    private void PilihKlaim(int nomor, string teks)
+    {
+        GameState gs = GameState.Instance;
+        if (gs == null || gs.cvSystem == null) return;
+
+        gs.cvSystem.AturKlaim(nomor, teks);
+
+        if (teksRakitCV != null) teksRakitCV.text = BuildTeksRakitCV();
+        BangunTombolRakitCV();
+    }
+
+    private void ToggleBukti(string id)
+    {
+        GameState gs = GameState.Instance;
+        if (gs == null || gs.cvSystem == null) return;
+
+        if (gs.buktiTerpasang.Contains(id)) gs.cvSystem.LepasBukti(id);
+        else gs.cvSystem.LampirkanBukti(id);
+
+        if (teksRakitCV != null) teksRakitCV.text = BuildTeksRakitCV();
+        BangunTombolRakitCV();
+    }
+
+    // Nama friendly buat tiap kartu bukti.
+    private string NamaBukti(string id)
+    {
+        if (id == "E0") return "Kartu Proyek";
+        if (id == "E1") return "Portofolio Antarmuka";
+        if (id == "E2") return "Catatan Uji";
+        return "Bukti";
+    }
+
+    // ---------------------------------------------------------------
+    // Verifikasi lowongan (empat aspek)
+    // ---------------------------------------------------------------
+
+    private void BukaPanelVerifikasi(ActivityData aktivitas)
+    {
+        aktivitasVerifikasi = aktivitas;
+
+        if (teksVerifikasi != null) teksVerifikasi.text = BuildTeksVerifikasi(aktivitas);
+        if (panelLaptop != null) panelLaptop.SetActive(false);
+
+        BukaPanel(panelVerifikasi);
+    }
+
+    private void TutupPanelVerifikasi()
+    {
+        aktivitasVerifikasi = null;
+        TutupPanel(panelVerifikasi);
+    }
+
+    private string BuildTeksVerifikasi(ActivityData aktivitas)
+    {
+        GameState gs = GameState.Instance;
+        if (gs == null || aktivitas == null) return "";
+
+        string kode = aktivitas.perusahaan;
+
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("CEK LOWONGAN");
+        sb.AppendLine(DataPerusahaan.NamaPerusahaan(kode));
+        sb.AppendLine();
+
+        List<DataPerusahaan.Aspek> aspek = DataPerusahaan.AspekMilik(kode);
+        for (int i = 0; i < aspek.Count; i++)
+        {
+            sb.AppendLine(aspek[i].judul + "  [" + aspek[i].tanda + "]");
+            sb.AppendLine("   " + aspek[i].isi);
+            if (!string.IsNullOrEmpty(aspek[i].catatan))
+            {
+                sb.AppendLine("   " + aspek[i].catatan);
+            }
+            sb.AppendLine();
+        }
+
+        sb.AppendLine();
+        sb.AppendLine("Catatan: " + DataPerusahaan.Catatan(kode));
+        sb.AppendLine();
+
+        int tenagaHasil = Mathf.Clamp(gs.tenaga - aktivitas.biayaTenaga, 0, 4);
+        int tekananHasil = Mathf.Clamp(gs.tekanan + aktivitas.biayaTekanan, 0, 6);
+        sb.AppendLine("Tenaga: " + gs.tenaga + " -> " + tenagaHasil
+                    + "     Tekanan: " + gs.tekanan + " -> " + tekananHasil);
+
+        return sb.ToString();
+    }
+
+    private void SelesaikanVerifikasi()
+    {
+        GameState gs = GameState.Instance;
+        if (gs == null || gs.activitySystem == null) return;
+        if (aktivitasVerifikasi == null) return;
+
+        ActivityData aktivitas = aktivitasVerifikasi;
+        aktivitasVerifikasi = null;
+
+        TutupPanelVerifikasi();
+        gs.activitySystem.JalankanAktivitas(aktivitas);
+    }
+
+    // ---------------------------------------------------------------
+    // Pengaturan
+    // ---------------------------------------------------------------
+
+    public void BukaPanelPengaturan()
+    {
+        if (teksPengaturan != null) teksPengaturan.text = BuildTeksPengaturan();
+        BangunTombolPengaturan();
+
+        if (panelMenuAwal != null) panelMenuAwal.SetActive(false);
+        if (panelCredits != null) panelCredits.SetActive(false);
+
+        BukaPanel(panelPengaturan);
+    }
+
+    private void TutupPanelPengaturan()
+    {
+        TutupPanel(panelPengaturan);
+
+        if (!gameSudahMulai && panelMenuAwal != null) panelMenuAwal.SetActive(true);
+    }
+
+    private string BuildTeksPengaturan()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("PENGATURAN");
+        sb.AppendLine();
+        sb.AppendLine("Ukuran teks        : " + PengaturanGame.LabelUkuranTeksSekarang());
+        sb.AppendLine("Sensitivitas mouse : " + PengaturanGame.sensitivitasMouse.ToString("0.0"));
+        sb.AppendLine("Invert Y           : " + (PengaturanGame.invertY ? "nyala" : "mati"));
+        sb.AppendLine("Kurangi gerak      : " + (PengaturanGame.kurangiGerak ? "nyala" : "mati"));
+        sb.AppendLine();
+        sb.AppendLine("Klik salah satu baris di bawah buat mengubahnya.");
+
+        return sb.ToString();
+    }
+
+    private void BangunTombolPengaturan()
+    {
+        if (wadahPengaturan == null) return;
+
+        for (int i = wadahPengaturan.childCount - 1; i >= 0; i--)
+        {
+            GameObject go = wadahPengaturan.GetChild(i).gameObject;
+            if (go == null) continue;
+            Destroy(go);
+        }
+
+        BuatTombol(wadahPengaturan, "Ukuran teks: " + PengaturanGame.LabelUkuranTeksSekarang(),
+                   delegate { GantiUkuranTeks(); });
+        BuatTombol(wadahPengaturan, "Sensitivitas mouse: " + PengaturanGame.sensitivitasMouse.ToString("0.0"),
+                   delegate { GantiSensitivitas(); });
+        BuatTombol(wadahPengaturan, "Invert Y: " + (PengaturanGame.invertY ? "nyala" : "mati"),
+                   delegate { GantiInvertY(); });
+        BuatTombol(wadahPengaturan, "Kurangi gerak: " + (PengaturanGame.kurangiGerak ? "nyala" : "mati"),
+                   delegate { GantiKurangiGerak(); });
+
+        TerapkanUkuranTeks();
+    }
+
+    private void GantiUkuranTeks()
+    {
+        PengaturanGame.GantiUkuranTeks(1);
+
+        if (teksPengaturan != null) teksPengaturan.text = BuildTeksPengaturan();
+        BangunTombolPengaturan();
+    }
+
+    private void GantiSensitivitas()
+    {
+        PengaturanGame.sensitivitasMouse += 0.5f;
+        if (PengaturanGame.sensitivitasMouse > 4f) PengaturanGame.sensitivitasMouse = 0.5f;
+
+        if (teksPengaturan != null) teksPengaturan.text = BuildTeksPengaturan();
+        BangunTombolPengaturan();
+    }
+
+    private void GantiInvertY()
+    {
+        PengaturanGame.invertY = !PengaturanGame.invertY;
+
+        if (teksPengaturan != null) teksPengaturan.text = BuildTeksPengaturan();
+        BangunTombolPengaturan();
+    }
+
+    private void GantiKurangiGerak()
+    {
+        PengaturanGame.kurangiGerak = !PengaturanGame.kurangiGerak;
+
+        if (teksPengaturan != null) teksPengaturan.text = BuildTeksPengaturan();
+        BangunTombolPengaturan();
+    }
+
+    // ---------------------------------------------------------------
+    // Credits dan sumber
+    // ---------------------------------------------------------------
+
+    public void BukaPanelCredits()
+    {
+        if (teksCredits != null) teksCredits.text = teksCreditsPanel;
+
+        if (panelMenuAwal != null) panelMenuAwal.SetActive(false);
+        if (panelPengaturan != null) panelPengaturan.SetActive(false);
+
+        BukaPanel(panelCredits);
+    }
+
+    private void TutupPanelCredits()
+    {
+        TutupPanel(panelCredits);
+
+        if (!gameSudahMulai && panelMenuAwal != null) panelMenuAwal.SetActive(true);
+    }
+
+    // ---------------------------------------------------------------
+    // Ukuran teks
+    // ---------------------------------------------------------------
+
+    // Perkecil atau perbesar semua teks di layar sesuai pengaturan.
+    // Ukuran asli tiap label disimpan dulu, jadi Setting bisa diubah
+    // berkali-kali tanpa bikin teks makin gede terus.
+    private void TerapkanUkuranTeks()
+    {
+        if (kanvas == null) return;
+
+        TextMeshProUGUI[] semuaTeks = kanvas.GetComponentsInChildren<TextMeshProUGUI>(true);
+        for (int i = 0; i < semuaTeks.Length; i++)
+        {
+            TextMeshProUGUI teks = semuaTeks[i];
+            if (teks == null) continue;
+
+            if (!ukuranTeksAwal.ContainsKey(teks))
+            {
+                ukuranTeksAwal[teks] = teks.fontSize;
+            }
+
+            teks.fontSize = Mathf.Round(ukuranTeksAwal[teks] * PengaturanGame.skalaTeks);
+        }
     }
 
     // ---------------------------------------------------------------
@@ -734,10 +1194,49 @@ public class UIManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(pesan)) return;
 
-        if (teksNotifikasi != null) teksNotifikasi.text = pesan;
+        if (teksNotifikasi != null)
+        {
+            teksNotifikasi.text = pesan;
+
+            // Warna asli dicatat sekali, biar animasi muncul pelan-pelan
+            // nggak mengubah warna tulisan.
+            if (!warnaNotifikasiTercatat)
+            {
+                warnaNotifikasiAwal = teksNotifikasi.color;
+                warnaNotifikasiTercatat = true;
+            }
+        }
+
         if (panelNotifikasi != null) panelNotifikasi.SetActive(true);
 
         waktuNotifikasi = durasiNotifikasi;
+
+        // Kalau Reduce Motion nyala, notifikasi langsung tampil utuh.
+        if (PengaturanGame.kurangiGerak)
+        {
+            if (teksNotifikasi != null) teksNotifikasi.color = warnaNotifikasiAwal;
+        }
+        else
+        {
+            StartCoroutine(MunculkanNotifikasi());
+        }
+    }
+
+    // Notifikasi muncul pelan-pelan. Kalau Reduce Motion nyala, animasi ini
+    // dilewati dan tulisan langsung tampil.
+    private IEnumerator MunculkanNotifikasi()
+    {
+        if (teksNotifikasi == null) yield break;
+
+        for (float t = 0f; t < 0.2f; t += Time.deltaTime)
+        {
+            Color warna = warnaNotifikasiAwal;
+            warna.a = Mathf.Clamp01(t / 0.2f);
+            teksNotifikasi.color = warna;
+            yield return null;
+        }
+
+        if (teksNotifikasi != null) teksNotifikasi.color = warnaNotifikasiAwal;
     }
 
     // ---------------------------------------------------------------
@@ -784,6 +1283,8 @@ public class UIManager : MonoBehaviour
             string label = (i + 1) + ". " + opsi[i];
             BuatTombol(wadahOpsiDialog, label, delegate { PilihOpsiDialog(nomor); });
         }
+
+        TerapkanUkuranTeks();
     }
 
     private void PilihOpsiDialog(int indeks)
@@ -853,8 +1354,15 @@ public class UIManager : MonoBehaviour
             int tekananHasil = Mathf.Clamp(tekananSekarang + aktivitas.biayaTekanan, 0, 6);
 
             teksKonfirmasi.text = "Aktivitas: " + aktivitas.nama + "\n\n"
-                                + aktivitas.deskripsi + "\n\n"
-                                + "Tenaga: " + tenagaSekarang + " -> " + tenagaHasil + "\n"
+                                + aktivitas.deskripsi + "\n\n";
+
+            // Ringkasan CV yang dikirim, dipisah biar jelas apa yang terkirim.
+            if (aktivitas.tipe == ActivityData.Tipe.KirimLamaran)
+            {
+                teksKonfirmasi.text += TeksLamaranTerkirim(aktivitas);
+            }
+
+            teksKonfirmasi.text += "Tenaga: " + tenagaSekarang + " -> " + tenagaHasil + "\n"
                                 + "Tekanan: " + tekananSekarang + " -> " + tekananHasil + "\n"
                                 + "Sesi berikutnya: " + TeksSesiBerikutnya() + "\n\n"
                                 + "Lanjutkan?";
@@ -863,7 +1371,43 @@ public class UIManager : MonoBehaviour
         BukaPanel(panelKonfirmasi);
     }
 
-    /// <summary>Nama sesi yang akan dipakai setelah aktivitas ini selesai.</summary>
+    // Ringkasan CV yang bakal dikirim. Dipakai di panel konfirmasi.
+    private string TeksLamaranTerkirim(ActivityData aktivitas)
+    {
+        GameState gs = GameState.Instance;
+        if (gs == null) return "";
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.AppendLine("Perusahaan: " + DataPerusahaan.NamaPerusahaan(aktivitas.perusahaan)
+                    + " - " + DataPerusahaan.PosisiPerusahaan(aktivitas.perusahaan));
+        sb.AppendLine("Klaim 1: " + (string.IsNullOrEmpty(gs.klaimDraf[0]) ? "-" : gs.klaimDraf[0]));
+        sb.AppendLine("Klaim 2: " + (string.IsNullOrEmpty(gs.klaimDraf[1]) ? "-" : gs.klaimDraf[1]));
+        sb.AppendLine("Bukti dikirim: " + BuktiKeTeks(gs.buktiTerpasang));
+
+        // Bukti wajib yang belum ikut dikirim.
+        List<string> kurang = new List<string>();
+        for (int i = 0; i < aktivitas.syaratBukti.Count; i++)
+        {
+            string id = aktivitas.syaratBukti[i];
+            if (string.IsNullOrEmpty(id)) continue;
+            if (!gs.buktiTerpasang.Contains(id)) kurang.Add(id);
+        }
+
+        if (kurang.Count > 0)
+        {
+            sb.AppendLine("Bukti wajib belum ikut: " + string.Join(", ", kurang.ToArray()));
+            sb.AppendLine("Lamaran tetap terkirim, tapi tawaran belum bisa diberikan.");
+        }
+
+        sb.AppendLine("Jadwal interview: hari " + aktivitas.hariInterview + ", sesi siang.");
+        sb.AppendLine("Setelah dikirim, CV ini dikunci dan nggak bisa diubah.");
+        sb.AppendLine();
+
+        return sb.ToString();
+    }
+
+    // Nama sesi yang akan dipakai setelah aktivitas ini selesai.
     private string TeksSesiBerikutnya()
     {
         GameState gs = GameState.Instance;
@@ -1043,10 +1587,8 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Tab "Lamaran": draf lowongan dari data naskah + draf CV Raka.
-    /// Isi lowongan diambil dari asset NaskahData, bukan ditulis di kode.
-    /// </summary>
+    // Tab "Lamaran": draf lowongan dari data naskah + draf CV Raka.
+    // Isi lowongan diambil dari asset NaskahData, bukan ditulis di kode.
     private string BuildTeksLamaran()
     {
         GameState gs = GameState.Instance;
@@ -1077,6 +1619,7 @@ public class UIManager : MonoBehaviour
         sb.AppendLine("  Klaim 2: " + (gs.klaimDraf.Length > 1 ? gs.klaimDraf[1] : "-"));
         sb.AppendLine("  Bukti   : " + BuktiKeTeks(gs.buktiTerpasang));
         sb.AppendLine();
+        sb.AppendLine("Buat CV pakai tombol 'Rakit CV' di panel laptop.");
         sb.AppendLine("Pilih kegiatan di bawah. Biaya tenaga dan tekanan");
         sb.AppendLine("ditampilkan dulu sebelum kegiatan jalan.");
 
@@ -1095,10 +1638,21 @@ public class UIManager : MonoBehaviour
         // Pesan pembuka hari ini (mis. pesan dari Ibu) diambil dari
         // asset NaskahData, supaya teksnya terpisah dari kode.
         NaskahData naskah = NaskahData.Ambil(gs.hari);
-        if (naskah != null && !string.IsNullOrEmpty(naskah.pesanPembuka))
+        if (naskah != null)
         {
-            sb.AppendLine(naskah.pengirim + " - " + naskah.pesanPembuka);
-            sb.AppendLine();
+            if (!string.IsNullOrEmpty(naskah.pesanPembuka))
+            {
+                sb.AppendLine(naskah.pengirim + " - " + naskah.pesanPembuka);
+                sb.AppendLine();
+            }
+
+            // Pesan lain yang masuk di hari yang sama.
+            for (int i = 0; i < naskah.pesanLain.Count; i++)
+            {
+                if (string.IsNullOrEmpty(naskah.pesanLain[i])) continue;
+                sb.AppendLine(naskah.pesanLain[i]);
+                sb.AppendLine();
+            }
         }
 
         // Pesan dari Dita (deterministik, depends on hari).
@@ -1184,12 +1738,21 @@ public class UIManager : MonoBehaviour
             ActivityData aktivitasDipilih = aktivitas;
             BuatTombol(wadahAktivitas, label, delegate { MintaJalankanAktivitas(aktivitasDipilih); });
         }
+
+        TerapkanUkuranTeks();
     }
 
-    private void MintaJalankanAktivitas(ActivityData aktivitas)
+    public void MintaJalankanAktivitas(ActivityData aktivitas)
     {
         GameState gs = GameState.Instance;
         if (gs == null || gs.activitySystem == null) return;
+
+        // Cek lowongan punya panel sendiri, bukan konfirmasi biasa.
+        if (aktivitas.tipe == ActivityData.Tipe.Verifikasi)
+        {
+            BukaPanelVerifikasi(aktivitas);
+            return;
+        }
 
         // Tutup laptop dulu supaya panel konfirmasi berada di atasnya.
         TutupPanelLaptop();
@@ -1248,14 +1811,27 @@ public class UIManager : MonoBehaviour
         TampilkanNotifikasi("Progres disimpan.");
     }
 
-    /// <summary>
-    /// Tidur. Dipakai tombol di panel Catatan dan juga objek kasur di scene
-    /// (lewat UnityEvent OnInteract).
-    /// </summary>
+    // Tidur. Dipakai tombol di panel Catatan dan juga objek kasur di scene
+    // (lewat UnityEvent OnInteract).
     public void Tidur()
     {
         GameState gs = GameState.Instance;
         if (gs == null || gs.sesiManager == null) return;
+
+        // Tidur cuma boleh di sesi malam. Kalau dipanggil waktu lain,
+        // activities-nya jadi tidak seimbang.
+        if (gs.sesi != GameState.Sesi.Malam)
+        {
+            TampilkanNotifikasi("Raka belum mau tidur. Tidur cuma boleh di sesi malam.");
+            return;
+        }
+
+        // Malam hari ketujuh bukan tidur, tapi keputusan akhir.
+        if (gs.hari >= 7)
+        {
+            TampilkanNotifikasi("Malam terakhir. Pilih dulu tawarannya.");
+            return;
+        }
 
         gs.sesiManager.Tidur();
         TampilkanNotifikasi("Raka tidur. Besok pagi.");
@@ -1285,13 +1861,20 @@ public class UIManager : MonoBehaviour
 
     private void BukaPilihanFinal()
     {
+        GameState gs = GameState.Instance;
+
+        bool adaA = (gs != null && gs.statusLamaranA == GameState.StatusLamaran.Ditawari);
+        bool adaB = (gs != null && gs.statusLamaranB == GameState.StatusLamaran.Ditawari);
+
         if (teksPilihanFinal != null)
         {
             teksPilihanFinal.text = "MALAM TERAKHIR\n\n"
                                   + "Keputusan ini menentukan akhir cerita Raka.\n"
                                   + "Pilih satu, atau pilih untuk pulang.\n\n"
-                                  + "A. Terima tawaran Studio Lajur\n"
-                                  + "B. Terima tawaran Koperasi Pijar\n"
+                                  + (adaA ? "A. Terima tawaran Studio Lajur\n"
+                                          : "A. Tawaran Studio Lajur belum didapat\n")
+                                  + (adaB ? "B. Terima tawaran Koperasi Pijar\n"
+                                          : "B. Tawaran Koperasi Pijar belum didapat\n")
                                   + "C. Terima tawaran yang cepat\n"
                                   + "Tidak ada. Pulang dengan portofolio yang sudah rapi.";
         }
@@ -1319,14 +1902,28 @@ public class UIManager : MonoBehaviour
             Destroy(go);
         }
 
-        BuatTombol(wadahPilihanFinal, "A. Terima tawaran Studio Lajur",
-                   delegate { PilihTawaranFinal(GameState.PilihanTawaran.A); });
-        BuatTombol(wadahPilihanFinal, "B. Terima tawaran Koperasi Pijar",
-                   delegate { PilihTawaranFinal(GameState.PilihanTawaran.B); });
+        GameState gs = GameState.Instance;
+        bool adaA = (gs != null && gs.statusLamaranA == GameState.StatusLamaran.Ditawari);
+        bool adaB = (gs != null && gs.statusLamaranB == GameState.StatusLamaran.Ditawari);
+
+        if (adaA)
+        {
+            BuatTombol(wadahPilihanFinal, "A. Terima tawaran Studio Lajur",
+                       delegate { PilihTawaranFinal(GameState.PilihanTawaran.A); });
+        }
+
+        if (adaB)
+        {
+            BuatTombol(wadahPilihanFinal, "B. Terima tawaran Koperasi Pijar",
+                       delegate { PilihTawaranFinal(GameState.PilihanTawaran.B); });
+        }
+
         BuatTombol(wadahPilihanFinal, "C. Terima tawaran yang cepat",
                    delegate { PilihTawaranFinal(GameState.PilihanTawaran.C); });
         BuatTombol(wadahPilihanFinal, "Tidak ada. Pulang dengan portofolio yang sudah rapi.",
                    delegate { PilihTawaranFinal(GameState.PilihanTawaran.TidakAda); });
+
+        TerapkanUkuranTeks();
     }
 
     private void PilihTawaranFinal(GameState.PilihanTawaran pilihan)
@@ -1412,9 +2009,7 @@ public class UIManager : MonoBehaviour
     // Membuat tombol lewat kode
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Buat panel layar penuh (dipakai menu awal dan layar info konten).
-    /// </summary>
+    // Buat panel layar penuh (dipakai menu awal dan layar info konten).
     private GameObject BuatPanelLayar(string nama, Color warnaLatar)
     {
         GameObject go = new GameObject(nama, typeof(RectTransform));
@@ -1433,7 +2028,7 @@ public class UIManager : MonoBehaviour
         return go;
     }
 
-    /// <summary>Buat teks besar di dalam panel layar.</summary>
+    // Buat teks besar di dalam panel layar.
     private TextMeshProUGUI BuatTeksLayar(GameObject panel, string nama, string isi,
                                          float ukuran, TextAlignmentOptions perataan)
     {
@@ -1459,7 +2054,7 @@ public class UIManager : MonoBehaviour
         return tmp;
     }
 
-    /// <summary>Buat wadah tombol (vertikal) di bawah panel layar.</summary>
+    // Buat wadah tombol (vertikal) di bawah panel layar.
     private RectTransform BuatWadahTombol(GameObject panel, string nama)
     {
         GameObject go = new GameObject(nama, typeof(RectTransform));
@@ -1484,10 +2079,8 @@ public class UIManager : MonoBehaviour
         return rt;
     }
 
-    /// <summary>
-    /// Buat tombol UI lengkap (gambar + teks) di bawah GameObject induk.
-    /// Dipakai untuk daftar aktivitas, opsi dialog, dan pilihan akhir.
-    /// </summary>
+    // Buat tombol UI lengkap (gambar + teks) di bawah GameObject induk.
+    // Dipakai untuk daftar aktivitas, opsi dialog, dan pilihan akhir.
     private Button BuatTombol(RectTransform induk, string label, UnityEngine.Events.UnityAction aksi)
     {
         if (induk == null) return null;

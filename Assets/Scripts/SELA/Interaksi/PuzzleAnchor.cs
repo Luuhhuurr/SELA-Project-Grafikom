@@ -1,24 +1,26 @@
 using System;
 using UnityEngine;
 
-/// <summary>
-/// PuzzleAnchor.cs
-/// Jangkar Retakan Ruang (BAB 3.3).
-///
-/// Cara mainnya sederhana dan ramah (naskah: tanpa timer, tanpa hukuman):
-///   - Retakan butuh satu benda tertentu (mis. "KartuProyek").
-///   - Raka ambil benda itu dulu, lalu tekan E di dekat jangkar.
-///   - Kalau bendanya salah: muncul petunjuk. Setelah 3 kali salah,
-///     muncul label tujuan sebagai petunjuk tambahan.
-///   - Kalau bendanya benar: retakan selesai, ruang kembali normal.
-///
-/// Progres disimpan di GameState.retakanSelesai (bool[3]).
-/// </summary>
+// PuzzleAnchor.cs
+// Jangkar Retakan Ruang (BAB 3.3).
+//
+// Cara mainnya sederhana dan ramah (naskah: tanpa timer, tanpa hukuman):
+// - Retakan butuh satu benda tertentu (mis. "KartuProyek").
+// - Raka ambil benda itu dulu, lalu tekan E di dekat jangkar.
+// - Kalau bendanya salah: muncul petunjuk. Setelah 3 kali salah,
+// muncul label tujuan sebagai petunjuk tambahan.
+// - Kalau bendanya benar: retakan selesai, ruang kembali normal.
+//
+// Progres disimpan di GameState.retakanSelesai (bool[3]).
 public class PuzzleAnchor : ObjekInteraktif
 {
     [Header("Retakan")]
     [Tooltip("Nomor retakan: 0, 1, atau 2. Maksimal 3 retakan dalam game.")]
     [Range(0, 2)] public int indeksRetakan = 0;
+
+    [Tooltip("Hari paling awal retakan ini muncul. Retakan 1 hari 2, "
+           + "retakan 2 hari 4, retakan 3 hari 6.")]
+    public int hariMinimal = 1;
 
     [Tooltip("Nama benda yang harus dibawa Raka. Harus PERSIS sama dengan "
            + "nama benda di objek pengambilan (mis. 'KartuProyek').")]
@@ -38,16 +40,23 @@ public class PuzzleAnchor : ObjekInteraktif
     [Tooltip("Pesan yang muncul saat retakan berhasil diselesaikan.")]
     public string pesanBerhasil = "Retakan ruang tertutup. Ruang kembali normal.";
 
-    /// <summary>Berapa kali Raka salah memakai benda di jangkar ini.</summary>
+    // Berapa kali Raka salah memakai benda di jangkar ini.
     public int jumlahPercobaanSalah = 0;
 
-    /// <summary>Dipanggil saat retakan solved. Parameter = indeks retakan.</summary>
+    // Dipanggil saat retakan solved. Parameter = indeks retakan.
     public event Action<int> OnRetakanSelesai;
 
     public override void Interact()
     {
         GameState gs = GameState.Instance;
         if (gs == null) return;
+
+        // Retakan baru muncul di hari yang ditentukan naskah.
+        if (gs.hari < hariMinimal)
+        {
+            gs.KirimNotifikasi("Belum ada apa-apa yang aneh di ruang ini hari ini.");
+            return;
+        }
 
         // Sudah selesai? kasih tahu saja.
         if (indeksRetakan >= 0 && indeksRetakan < gs.retakanSelesai.Length
@@ -113,6 +122,10 @@ public class PuzzleAnchor : ObjekInteraktif
     public override string TeksPrompt()
     {
         if (sudahDigunakan) return "";
+
+        GameState gs = GameState.Instance;
+        if (gs != null && gs.hari < hariMinimal) return "";
+
         return "[E] " + namaTampilan;
     }
 }

@@ -1,18 +1,16 @@
 using System;
 using UnityEngine;
 
-/// <summary>
-/// EndingManager.cs
-/// Mengatur tiga ending akhir game SELA (naskah BAB VI).
-///
-/// PENTING: ending HANYA ditentukan oleh pilihan kontrak pemain
-/// (GameState.pilihanTawaran). Tekanan dan Tenaga TIDAK boleh dibaca di
-/// methods ini. Status kesehatan memengaruhi Alma nanti, bukan_epilog.
-///
-///   A atau B  -> "Mulai dengan Batas"
-///   Tidak ada -> "Pulang, Bukan Selesai"
-///   C         -> "Kontrak yang Mengunci" (peringatan khusus + konfirmasi 2x)
-/// </summary>
+// EndingManager.cs
+// Mengatur tiga ending akhir game SELA (naskah BAB VI).
+//
+// PENTING: ending HANYA ditentukan oleh pilihan kontrak pemain
+// (GameState.pilihanTawaran). Tekanan dan Tenaga TIDAK boleh dibaca di
+// methods ini. Status kesehatan memengaruhi Alma nanti, bukan_epilog.
+//
+// A atau B  -> "Mulai dengan Batas"
+// Tidak ada -> "Pulang, Bukan Selesai"
+// C         -> "Kontrak yang Mengunci" (peringatan khusus + konfirmasi 2x)
 public class EndingManager : MonoBehaviour
 {
     public static EndingManager Instance { get; private set; }
@@ -21,32 +19,32 @@ public class EndingManager : MonoBehaviour
     // Event
     // ---------------------------------------------------------------
 
-    /// <summary>Dipanggil saat panel keputusan final harus muncul (malam hari 7).</summary>
+    // Dipanggil saat panel keputusan final harus muncul (malam hari 7).
     public event Action OnPilihanFinalMuncul;
 
-    /// <summary>Dipanggil saat layar ending + refleksi harus muncul.</summary>
+    // Dipanggil saat layar ending + refleksi harus muncul.
     public event Action OnEndingMuncul;
 
-    /// <summary>Dipanggil saat peringatan khusus tawaran C muncul.</summary>
+    // Dipanggil saat peringatan khusus tawaran C muncul.
     public event Action<int> OnPeringatanCMuncul;
 
-    /// <summary>Dipanggil saat pemain batal dari peringatan C.</summary>
+    // Dipanggil saat pemain batal dari peringatan C.
     public event Action OnPeringatanCBatal;
 
     // ---------------------------------------------------------------
     // Status EndingManager
     // ---------------------------------------------------------------
 
-    /// <summary>Judul ending yang sedang tampil.</summary>
+    // Judul ending yang sedang tampil.
     public string EndingSaatIni { get; private set; }
 
-    /// <summary>Isi cerita ending yang sedang tampil.</summary>
+    // Isi cerita ending yang sedang tampil.
     public string IsiEndingSaatIni { get; private set; }
 
-    /// <summary>Berapa kali pemain menekan "Ya, saya yakin" untuk tawaran C.</summary>
+    // Berapa kali pemain menekan "Ya, saya yakin" untuk tawaran C.
     public int jumlahKonfirmasiC = 0;
 
-    /// <summary>Catatan batas / langkah berikutnya yang ditulis pemain (opsional).</summary>
+    // Catatan batas / langkah berikutnya yang ditulis pemain (opsional).
     public string catatanBatas = "";
 
     private bool pilihanFinalTerbuka = false;
@@ -122,7 +120,9 @@ public class EndingManager : MonoBehaviour
 
     void Awake()
     {
-        Instance = this;
+        // Jangan rebut Instance dari EndingManager yang lama (kalau scene
+        // dimuat ulang, yang lama masih hidup karena GameState persistent).
+        if (Instance == null) Instance = this;
     }
 
     void Start()
@@ -151,10 +151,8 @@ public class EndingManager : MonoBehaviour
     // Keputusan final
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Dipanggil setiap state berubah. Malam hari ke-7 adalah waktu
-    /// keputusan final (naskah BAB IV Hari 7).
-    /// </summary>
+    // Dipanggil setiap state berubah. Malam hari ke-7 adalah waktu
+    // keputusan final (naskah BAB IV Hari 7).
     private void PeriksaWaktuFinal()
     {
         GameState gs = GameState.Instance;
@@ -166,7 +164,7 @@ public class EndingManager : MonoBehaviour
         }
     }
 
-    /// <summary>Buka panel keputusan final (A / B / C / Tidak ada).</summary>
+    // Buka panel keputusan final (A / B / C / Tidak ada).
     public void TampilkanPilihanFinal()
     {
         if (pilihanFinalTerbuka) return;
@@ -175,17 +173,15 @@ public class EndingManager : MonoBehaviour
         if (OnPilihanFinalMuncul != null) OnPilihanFinalMuncul();
     }
 
-    /// <summary>Dipanggil UIManager saat pemain menutup panel keputusan final.</summary>
+    // Dipanggil UIManager saat pemain menutup panel keputusan final.
     public void TutupPilihanFinal()
     {
         pilihanFinalTerbuka = false;
     }
 
-    /// <summary>
-    /// Dipanggil UIManager saat pemain memilih salah satu tawaran.
-    /// Kalau pilih C, yang terjadi PERINGATAN SPESIAL dulu (bukan langsung
-    /// selesai), supaya ada konfirmasi tambahan dua kali.
-    /// </summary>
+    // Dipanggil UIManager saat pemain memilih salah satu tawaran.
+    // Kalau pilih C, yang terjadi PERINGATAN SPESIAL dulu (bukan langsung
+    // selesai), supaya ada konfirmasi tambahan dua kali.
     public void MintaPilihFinal(GameState.PilihanTawaran pilihan)
     {
         if (pilihan == GameState.PilihanTawaran.C)
@@ -199,10 +195,8 @@ public class EndingManager : MonoBehaviour
         SelesaikanPilihan(pilihan);
     }
 
-    /// <summary>
-    /// Dipanggil UIManager saat pemain menekan "Ya, saya yakin" pada
-    /// peringatan tawaran C. Dua kali klik baru ending-nya jalan.
-    /// </summary>
+    // Dipanggil UIManager saat pemain menekan "Ya, saya yakin" pada
+    // peringatan tawaran C. Dua kali klik baru ending-nya jalan.
     public void KonfirmasiPeringatanC()
     {
         jumlahKonfirmasiC++;
@@ -217,7 +211,7 @@ public class EndingManager : MonoBehaviour
         SelesaikanPilihan(GameState.PilihanTawaran.C);
     }
 
-    /// <summary>Dipanggil UIManager saat pemain membatalkan peringatan C.</summary>
+    // Dipanggil UIManager saat pemain membatalkan peringatan C.
     public void BatalPilihFinal()
     {
         jumlahKonfirmasiC = 0;
@@ -229,6 +223,22 @@ public class EndingManager : MonoBehaviour
         GameState gs = GameState.Instance;
         if (gs == null) return;
 
+        // Tawaran A dan B cuma bisa dipilih kalau Raka memang sudah
+        // mendapat tawarantya. Kalau belum, pilihan ini nggak ada.
+        if (pilihan == GameState.PilihanTawaran.A
+            && gs.statusLamaranA != GameState.StatusLamaran.Ditawari)
+        {
+            gs.KirimNotifikasi("Raka belum dapat tawaran Studio Lajur.");
+            return;
+        }
+
+        if (pilihan == GameState.PilihanTawaran.B
+            && gs.statusLamaranB != GameState.StatusLamaran.Ditawari)
+        {
+            gs.KirimNotifikasi("Raka belum dapat tawaran Koperasi Pijar.");
+            return;
+        }
+
         gs.PilihTawaran(pilihan);
         TampilkanEnding();
     }
@@ -237,13 +247,11 @@ public class EndingManager : MonoBehaviour
     // Menampilkan ending
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Tampilkan ending sesuai pilihan kontrak pemain.
-    ///
-    /// CATATAN PENTING: di method ini TIDAK ADA satu pun pembacaan
-    /// GameState.tenaga atau GameState.tekanan. Ending murni mengikuti
-    /// pilihan kontrak.
-    /// </summary>
+    // Tampilkan ending sesuai pilihan kontrak pemain.
+    //
+    // CATATAN PENTING: di method ini TIDAK ADA satu pun pembacaan
+    // GameState.tenaga atau GameState.tekanan. Ending murni mengikuti
+    // pilihan kontrak.
     public void TampilkanEnding()
     {
         GameState gs = GameState.Instance;
@@ -271,7 +279,7 @@ public class EndingManager : MonoBehaviour
         SaveSystem.Simpan();
     }
 
-    /// <summary>Teks lengkap layar akhir: cerita + refleksi + disclaimer.</summary>
+    // Teks lengkap layar akhir: cerita + refleksi + disclaimer.
     public string TeksLayarAkhir()
     {
         string hasil = EndingSaatIni + "\n\n" + IsiEndingSaatIni + "\n\n";

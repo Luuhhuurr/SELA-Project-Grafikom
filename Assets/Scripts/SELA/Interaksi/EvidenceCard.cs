@@ -1,17 +1,15 @@
 using UnityEngine;
 
-/// <summary>
-/// EvidenceCard.cs
-/// Kartu bukti yang bisa diambil Raka (BAB 3.2).
-///
-/// Daftar kartu bukti:
-///   E0 = Kartu Proyek      (rak di Ruang Terpanjang)
-///   E1 = Antarmuka Bersih  (hasil aktivitas "Rapikan Antarmuka")
-///   E2 = Catatan Uji Lengkap (hasil aktivitas "Lengkapi Catatan Uji")
-///
-/// Saat diambil, kartu masuk ke daftar bukti milik GameState, mesh-nya
-/// hilang, dan pemain mendapat notifikasi.
-/// </summary>
+// EvidenceCard.cs
+// Kartu bukti yang bisa diambil Raka (BAB 3.2).
+//
+// Daftar kartu bukti:
+// E0 = Kartu Proyek      (rak di Ruang Terpanjang)
+// E1 = Antarmuka Bersih  (hasil aktivitas "Rapikan Antarmuka")
+// E2 = Catatan Uji Lengkap (hasil aktivitas "Lengkapi Catatan Uji")
+//
+// Saat diambil, kartu masuk ke daftar bukti milik GameState, mesh-nya
+// hilang, dan pemain mendapat notifikasi.
 public class EvidenceCard : ObjekInteraktif
 {
     [Header("Kartu Bukti")]

@@ -18,6 +18,7 @@ MonoBehaviour:
   biayaTekanan: -1
   syaratBukti: []
   hariMinimal: 1
+  hariMaks: 0
   hanyaSekali: 0
   sekaliPerHari: 1
   hasil: 

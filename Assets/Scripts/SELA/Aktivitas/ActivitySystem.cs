@@ -2,32 +2,30 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// ActivitySystem.cs
-/// Mengatur semua aktivitas (kegiatan) yang bisa dipilih Raka.
-///
-/// Alur:
-///
-///   UIManager -> ActivitySystem.MintaJalankan(aktivitas)
-///             -> UI menampilkan panel konfirmasi (biayaTenaga / biayaTekanan)
-///             -> UIManager -> ActivitySystem.JalankanAktivitas(aktivitas)
-///             -> biaya dipotong, satu sesi terpakai, hasil masuk ke GameState
-///
-/// Semua hasil bersifat deterministic: tidak ada angka acak sama sekali.
-/// </summary>
+// ActivitySystem.cs
+// Mengatur semua aktivitas (kegiatan) yang bisa dipilih Raka.
+//
+// Alur:
+//
+// UIManager -> ActivitySystem.MintaJalankan(aktivitas)
+// -> UI menampilkan panel konfirmasi (biayaTenaga / biayaTekanan)
+// -> UIManager -> ActivitySystem.JalankanAktivitas(aktivitas)
+// -> biaya dipotong, satu sesi terpakai, hasil masuk ke GameState
+//
+// Semua hasil bersifat deterministic: tidak ada angka acak sama sekali.
 public class ActivitySystem : MonoBehaviour
 {
     [Header("Daftar Aktivitas")]
     [Tooltip("Isi dengan asset ActivityData. Urutannya = urutan di panel aktivitas.")]
     public List<ActivityData> daftarAktivitas = new List<ActivityData>();
 
-    /// <summary>Dipanggil saat pemain mau menjalankan aktivitas (UI menampilkan konfirmasi).</summary>
+    // Dipanggil saat pemain mau menjalankan aktivitas (UI menampilkan konfirmasi).
     public event Action<ActivityData> OnMintaKonfirmasi;
 
-    /// <summary>Dipanggil setelah aktivitas selesai dijalankan.</summary>
+    // Dipanggil setelah aktivitas selesai dijalankan.
     public event Action<ActivityData> OnAktivitasSelesai;
 
-    /// <summary>Dipanggil saat aktivitas Interview perlu membuka dialog. Parameter = kode perusahaan.</summary>
+    // Dipanggil saat aktivitas Interview perlu membuka dialog. Parameter = kode perusahaan.
     public event Action<string> OnMintaInterview;
 
     // Aktivitas yang sudah pernah selesai (nama aktivitas -> true).
@@ -41,10 +39,8 @@ public class ActivitySystem : MonoBehaviour
     // Cek syarat
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Cek apakah aktivitas boleh dijalankan sekarang.
-    /// Mengembalikan pesan alasan kalau tidak bisa (dipakai UI).
-    /// </summary>
+    // Cek apakah aktivitas boleh dijalankan sekarang.
+    // Mengembalikan pesan alasan kalau tidak bisa (dipakai UI).
     public bool CekSyarat(ActivityData aktivitas, out string alasan)
     {
         alasan = "";
@@ -60,7 +56,10 @@ public class ActivitySystem : MonoBehaviour
         }
 
         // Sudah dijalankan hari ini?
-        if (aktivitas.sekaliPerHari && aktivitasHariIni.Contains(aktivitas.nama))
+        // Daftar "hari ini" cuma valid kalau masih hari yang sama, kalau
+        // sudah ganti hari daftarnya dianggap habis.
+        if (aktivitas.sekaliPerHari && hariTercatat == gs.hari
+            && aktivitasHariIni.Contains(aktivitas.nama))
         {
             alasan = "Aktivitas '" + aktivitas.nama + "' sudah dilakukan hari ini.";
             return false;
@@ -74,6 +73,22 @@ public class ActivitySystem : MonoBehaviour
             return false;
         }
 
+        // Batas akhirnya sudah lewat?
+        if (aktivitas.hariMaks > 0 && gs.hari > aktivitas.hariMaks)
+        {
+            alasan = "Batas '" + aktivitas.nama + "' sudah lewat. Lamaran harus dikirim "
+                     + "sebelum hari " + aktivitas.hariMaks + ".";
+            return false;
+        }
+
+        // Malam hari ketujuh dipakai buat keputusan akhir, jadi tidak ada
+        // kegiatan yang boleh jalan lagi.
+        if (gs.hari == 7 && gs.sesi == GameState.Sesi.Malam)
+        {
+            alasan = "Malam terakhir. Pilih dulu tawaran, atau pulang.";
+            return false;
+        }
+
         // Bukti syarat sudah lengkap?
         for (int i = 0; i < aktivitas.syaratBukti.Count; i++)
         {
@@ -83,6 +98,30 @@ public class ActivitySystem : MonoBehaviour
             if (!gs.PunyaBukti(id))
             {
                 alasan = "Aktivitas '" + aktivitas.nama + "' butuh bukti " + id + ".";
+                return false;
+            }
+        }
+
+        // Lamaran butuh CV yang sudah dirakit: dua baris klaim dan
+        // minimal satu bukti. Lamaran cuma boleh dikirim sekali, jadi CV
+        // yang masih kosong akan membuat permainan buntu.
+        if (aktivitas.tipe == ActivityData.Tipe.KirimLamaran)
+        {
+            if (gs.cvSystem == null)
+            {
+                alasan = "Sistem CV belum siap.";
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(gs.klaimDraf[0]) || string.IsNullOrEmpty(gs.klaimDraf[1]))
+            {
+                alasan = "Rakit CV dulu: dua baris klaim belum dipilih.";
+                return false;
+            }
+
+            if (gs.buktiTerpasang.Count == 0)
+            {
+                alasan = "Rakit CV dulu: belum ada bukti yang dipasang.";
                 return false;
             }
         }
@@ -117,7 +156,7 @@ public class ActivitySystem : MonoBehaviour
         return true;
     }
 
-    /// <summary>Versi ringkas CekSyarat (kalau alasan tidak dipakai).</summary>
+    // Versi ringkas CekSyarat (kalau alasan tidak dipakai).
     public bool CekSyarat(ActivityData aktivitas)
     {
         string alasan;
@@ -128,10 +167,8 @@ public class ActivitySystem : MonoBehaviour
     // Menjalankan aktivitas
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Dipanggil UIManager saat pemain mengklik aktivitas.
-    /// Yardanya: cek syarat dulu, lalu minta konfirmasi ke UI.
-    /// </summary>
+    // Dipanggil UIManager saat pemain mengklik aktivitas.
+    // Yardanya: cek syarat dulu, lalu minta konfirmasi ke UI.
     public void MintaJalankan(ActivityData aktivitas)
     {
         GameState gs = GameState.Instance;
@@ -147,10 +184,8 @@ public class ActivitySystem : MonoBehaviour
         if (OnMintaKonfirmasi != null) OnMintaKonfirmasi(aktivitas);
     }
 
-    /// <summary>
-    /// Benar-benar menjalankan aktivitas. Dipanggil UIManager setelah
-    /// pemain menyetujui konfirmasi.
-    /// </summary>
+    // Benar-benar menjalankan aktivitas. Dipanggil UIManager setelah
+    // pemain menyetujui konfirmasi.
     public void JalankanAktivitas(ActivityData aktivitas)
     {
         if (aktivitas == null) return;
@@ -253,14 +288,14 @@ public class ActivitySystem : MonoBehaviour
         riwayatSelesai[nama] = true;
     }
 
-    /// <summary>Cek apakah aktivitas dengan nama ini sudah pernah selesai.</summary>
+    // Cek apakah aktivitas dengan nama ini sudah pernah selesai.
     public bool SudahSelesai(string nama)
     {
         if (string.IsNullOrEmpty(nama)) return false;
         return riwayatSelesai.ContainsKey(nama) && riwayatSelesai[nama];
     }
 
-    /// <summary>Daftar nama aktivitas yang sudah selesai (dipakai SaveSystem).</summary>
+    // Daftar nama aktivitas yang sudah selesai (dipakai SaveSystem).
     public List<string> AmbilNamaSelesai()
     {
         List<string> hasil = new List<string>();
@@ -271,7 +306,17 @@ public class ActivitySystem : MonoBehaviour
         return hasil;
     }
 
-    /// <summary>Isi riwayat dari data save (dipakai SaveSystem).</summary>
+    // Hapus riwayat aktivitas (dipakai waktu mulai permainan baru).
+    // Kalau tidak dihapus, aktivitas yang "sekali saja" akan tetap
+    // terkunci walaupun permainan sudah diulang dari awal.
+    public void ResetRiwayat()
+    {
+        riwayatSelesai.Clear();
+        aktivitasHariIni.Clear();
+        hariTercatat = -1;
+    }
+
+    // Isi riwayat dari data save (dipakai SaveSystem).
     public void TerapkanRiwayat(List<string> daftar)
     {
         riwayatSelesai.Clear();
@@ -283,13 +328,13 @@ public class ActivitySystem : MonoBehaviour
         }
     }
 
-    /// <summary>Nama aktivitas yang sudah dijalankan hari ini (dipakai SaveSystem).</summary>
+    // Nama aktivitas yang sudah dijalankan hari ini (dipakai SaveSystem).
     public List<string> AmbilNamaHariIni()
     {
         return new List<string>(aktivitasHariIni);
     }
 
-    /// <summary>Isi daftar aktivitas hari ini dari data save (dipakai SaveSystem).</summary>
+    // Isi daftar aktivitas hari ini dari data save (dipakai SaveSystem).
     public void TerapkanHariIni(List<string> daftar)
     {
         aktivitasHariIni.Clear();

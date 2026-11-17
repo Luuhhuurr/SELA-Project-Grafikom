@@ -1,31 +1,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// NaskahData.cs
-/// Struktur data untuk isi naskah game (isi cerita / isi lowongan).
-///
-/// TUJUAN SCRIPT INI:
-///   Memisahkan TEKS NASKAH dari logika permainan. Semua isi naskah
-///   disimpan di sini sebagai data, bukan ditulis di dalam kode UI.
-///   Jadi kalau teksnya berubah, cukup ubah asset-nya, tidak perlu
-///   menyentuh kode sama sekali.
-///
-/// CONTOH ISI HARI 1:
-///   - Pesan pembuka dari Ibu (masuk ke tab "Pesan" di laptop).
-///   - Draf lowongan Studio Lajur (masuk ke tab "Lamaran" di laptop).
-///
-/// CARA MEMBUAT ASSET BARU:
-///   Assets > Create > SELA > Naskah Hari
-///   Lalu isi kolom Inspector dan simpan asset-nya.
-///   Supaya file otomatis ikut ke folder Resources, buat lewat
-///   menu Create itu sudah otomatis menaruhnya di Assets/Naskah/.
-///
-/// CATATAN PENTING:
-///   Script ini TIDAK punya logika sesi, logika hari, atau logikaEnding.
-///   Dia hanya menyimpan teks. Semua aturan main tetap di GameState,
-///   SessionManager, dan UIManager.
-/// </summary>
+// NaskahData.cs
+//
+// Struktur data untuk isi naskah game (isi cerita dan isi lowongan).
+//
+// Ide nya sederhana: teks naskah disimpan sebagai data, bukan ditulis
+// di dalam kode UI. Jadi kalau ada kalimat yang mau diganti, cukup ubah
+// asset-nya, tidak perlu compile ulang.
+//
+// Script ini TIDAK pegang logika sesi, logika hari, atau logika ending.
+// Dia cuma nyimpen teks. Aturan main tetap di GameState, SessionManager,
+// dan UIManager.
+//
+// Asset baru dibuat lewat menu:
+//   Assets > Create > SELA > Naskah Hari
+// Simpan asset-nya DI DALAM folder Resources supaya bisa dibaca
+// lewat Resources.Load.
 [CreateAssetMenu(fileName = "NaskahHari1", menuName = "SELA/Naskah Hari", order = 2)]
 public class NaskahData : ScriptableObject
 {
@@ -47,6 +38,10 @@ public class NaskahData : ScriptableObject
     [TextArea(3, 8)]
     [Tooltip("Isi pesan. Untuk Hari 1: pesan pembuka dari Ibu.")]
     public string pesanPembuka = "";
+
+    [Header("Pesan tambahan (masuk tab Pesan, di bawah pesan utama)")]
+    [Tooltip("Pesan lain yang masuk di hari yang sama. Satu pesan satu baris.")]
+    public List<string> pesanLain = new List<string>();
 
     [Header("Draf lowongan (masuk tab Lamaran)")]
     [Tooltip("Nama perusahaan. Contoh: Studio Lajur.")]
@@ -70,13 +65,11 @@ public class NaskahData : ScriptableObject
     [Tooltip("Catatan kecil untuk pemain, ditampilkan di tab Catatan.")]
     public string catatanTambahan = "";
 
-    /// <summary>
-    /// Ambil naskah untuk hari tertentu.
-    /// Urutan pencarian:
-    ///   1. Cari asset ScriptableObject di folder Resources.
-    ///   2. Kalau tidak ada, cari file JSON-nya.
-    ///   3. Kalau tetap tidak ada, kembalikan null (UI harus aman kalau null).
-    /// </summary>
+    // Ambil naskah untuk hari tertentu.
+    // Urutan pencarian:
+    //   1. Cari asset ScriptableObject di folder Resources.
+    //   2. Kalau tidak ada, cari file JSON-nya.
+    //   3. Kalau tetap tidak ada, kembalikan null (UI harus aman kalau null).
     public static NaskahData Ambil(int hari)
     {
         // 1. Asset ScriptableObject (bikin lewat menu Create).
@@ -108,6 +101,7 @@ public class NaskahData : ScriptableObject
         Ringkasan           : "Raka bangun di kamar 07. Ponsel bergetar."
         Pengirim            : "Ibu"
         Pesan Pembuka       : isi pesan dari Ibu
+        Pesan Tambahan      : isi pesan lain di hari yang sama (satu per baris)
         Perusahaan Lowongan : "Studio Lajur"
         Judul Lowongan      : "Junior UI Implementer"
         Draft Lowongan      : isi draf lowongan (tugas, gaji, jam kerja)

@@ -1,28 +1,26 @@
 using System;
 using UnityEngine;
 
-/// <summary>
-/// SessionManager.cs
-/// Mengatur siklus sesi dan hari dalam game SELA.
-///
-/// Satu aktivitas = satu sesi.
-/// Urutan sesi: Pagi -> Siang -> Malam -> (tidur) -> Pagi hari berikutnya.
-///
-/// Biaya pada aktivitas boleh bernilai NEGATIF. Angka negatif berarti
-/// pemulihan, bukan biaya. Contoh: Istirahat memakai biayaTenaga = -3
-/// (tenaga naik 3) dan biayaTekanan = -2 (tekanan turun 2).
-/// </summary>
+// SessionManager.cs
+// Mengatur siklus sesi dan hari dalam game SELA.
+//
+// Satu aktivitas = satu sesi.
+// Urutan sesi: Pagi -> Siang -> Malam -> (tidur) -> Pagi hari berikutnya.
+//
+// Biaya pada aktivitas boleh bernilai NEGATIF. Angka negatif berarti
+// pemulihan, bukan biaya. Contoh: Istirahat memakai biayaTenaga = -3
+// (tenaga naik 3) dan biayaTekanan = -2 (tekanan turun 2).
 public class SessionManager : MonoBehaviour
 {
     public static SessionManager Instance { get; private set; }
 
-    /// <summary>Dipanggil setiap sesi berganti (Pagi/Siang/Malam).</summary>
+    // Dipanggil setiap sesi berganti (Pagi/Siang/Malam).
     public event Action OnSesiBerpindah;
 
-    /// <summary>Dipanggil setiap masuk hari baru.</summary>
+    // Dipanggil setiap masuk hari baru.
     public event Action OnHariBaru;
 
-    /// <summary>Dipanggil satu kali pada Malam hari ke-7 (keputusan final).</summary>
+    // Dipanggil satu kali pada Malam hari ke-7 (keputusan final).
     public event Action OnFinalNight;
 
     private bool finalNightTerbuka = false;
@@ -41,10 +39,8 @@ public class SessionManager : MonoBehaviour
     // Cek energi
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Cek apakah Raka cukup tenaga dan tekanan untuk menjalankan aktivitas.
-    /// Yang dicek hanya biaya POSITIF. Biaya negatif (pemulihan) selalu boleh.
-    /// </summary>
+    // Cek apakah Raka cukup tenaga dan tekanan untuk menjalankan aktivitas.
+    // Yang dicek hanya biaya POSITIF. Biaya negatif (pemulihan) selalu boleh.
     public bool EnergiCukup(int biayaTenaga, int biayaTekanan)
     {
         GameState gs = GameState.Instance;
@@ -60,11 +56,9 @@ public class SessionManager : MonoBehaviour
     // Menjalankan aktivitas
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Jalankan satu aktivitas: potong biaya, geser satu sesi, cek malam
-    /// terakhir, lalu simpan game.
-    /// Return true kalau aktivitasnya benar-benar jalan.
-    /// </summary>
+    // Jalankan satu aktivitas: potong biaya, geser satu sesi, cek malam
+    // terakhir, lalu simpan game.
+    // Return true kalau aktivitasnya benar-benar jalan.
     public bool JalankanAktivitas(string nama, int biayaTenaga, int biayaTekanan)
     {
         GameState gs = GameState.Instance;
@@ -109,7 +103,7 @@ public class SessionManager : MonoBehaviour
     // Tidur
     // ---------------------------------------------------------------
 
-    /// <summary>Tidur: memulihkan tenaga, menutup hari, simpan game.</summary>
+    // Tidur: memulihkan tenaga, menutup hari, simpan game.
     public void Tidur()
     {
         GameState gs = GameState.Instance;
@@ -136,11 +130,9 @@ public class SessionManager : MonoBehaviour
     // Malam terakhir
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Malam hari ke-7 adalah waktu keputusan akhir (BAB VI).
-    /// Also tetap dipicu kalau pemain somehow melewati hari 7 tanpa
-    /// pernah menyentuh sesi Malam.
-    /// </summary>
+    // Malam hari ke-7 adalah waktu keputusan akhir (BAB VI).
+    // Also tetap dipicu kalau pemain somehow melewati hari 7 tanpa
+    // pernah menyentuh sesi Malam.
     private void CekFinalNight()
     {
         GameState gs = GameState.Instance;
@@ -161,11 +153,9 @@ public class SessionManager : MonoBehaviour
     // Interview yang terlewat
     // ---------------------------------------------------------------
 
-    /// <summary>
-    /// Interview selalu berlangsung di sesi siang pada hari yang dijadwalkan.
-    /// Kalau pemain tidur tanpa melakukannya, jadwal terlewat: lamaran
-    /// ditandai ditolak dan Tekanan naik satu kali (naskah BAB IV Hari 5).
-    /// </summary>
+    // Interview selalu berlangsung di sesi siang pada hari yang dijadwalkan.
+    // Kalau pemain tidur tanpa melakukannya, jadwal terlewat: lamaran
+    // ditandai ditolak dan Tekanan naik satu kali (naskah BAB IV Hari 5).
     private void CekInterviewTerlewat()
     {
         CekSatuPerusahaan("A");
@@ -193,7 +183,7 @@ public class SessionManager : MonoBehaviour
     // Bantuan tampilan
     // ---------------------------------------------------------------
 
-    /// <summary>Ubah enum sesi jadi teks yang enak dibaca di HUD.</summary>
+    // Ubah enum sesi jadi teks yang enak dibaca di HUD.
     public static string TeksSesi(GameState.Sesi sesi)
     {
         if (sesi == GameState.Sesi.Pagi) return "Pagi";

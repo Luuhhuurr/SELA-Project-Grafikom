@@ -33,6 +33,8 @@ crashlytics-build.properties
 # Hasil uji batch mode
 sela_test*.xml
 sela_test*.log
+hasil-uji.xml
+uji.log
 
 # OS
 .DS_Store
