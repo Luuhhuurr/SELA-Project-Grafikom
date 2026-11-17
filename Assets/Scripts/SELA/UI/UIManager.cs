@@ -76,6 +76,7 @@ public class UIManager : MonoBehaviour
 
     [Header("Teks")]
     public TextMeshProUGUI teksHUD;
+    public TextMeshProUGUI teksTujuan;
     public TextMeshProUGUI teksPrompt;
     public TextMeshProUGUI teksNotifikasi;
     public TextMeshProUGUI teksDialogPembicara;
@@ -1159,6 +1160,12 @@ public class UIManager : MonoBehaviour
         sb.Append("   Lamaran B: ").Append(gs.statusLamaranB.ToString());
 
         teksHUD.text = sb.ToString();
+
+        // Baris tujuan. Supaya pemain tahu harus ngapain sekarang.
+        if (teksTujuan != null)
+        {
+            teksTujuan.text = "TUJUAN: " + TujuanGame.Tujuan(gs);
+        }
     }
 
     private string BuktiKeTeks(List<string> daftar)
@@ -1209,7 +1216,9 @@ public class UIManager : MonoBehaviour
 
         if (panelNotifikasi != null) panelNotifikasi.SetActive(true);
 
-        waktuNotifikasi = durasiNotifikasi;
+        // Notifikasi yang panjang dibiarkan lebih lama, jadi teks tujuan
+        // harian sempat dibaca.
+        waktuNotifikasi = Mathf.Max(durasiNotifikasi, 1.5f + pesan.Length * 0.035f);
 
         // Kalau Reduce Motion nyala, notifikasi langsung tampil utuh.
         if (PengaturanGame.kurangiGerak)
@@ -1453,7 +1462,11 @@ public class UIManager : MonoBehaviour
     private void OnHariBaru()
     {
         PerbaruiHUD();
-        TampilkanNotifikasi("Hari baru. Sesi Pagi.");
+
+        // Kasih tahu tujuan hari ini, biar pemain nggak perlu menebak
+        // harus ngapain setelah bangun tidur.
+        string tujuan = TujuanGame.Tujuan(GameState.Instance);
+        TampilkanNotifikasi("Hari baru. Sesi Pagi. Tujuan: " + tujuan);
     }
 
     // ---------------------------------------------------------------
@@ -1484,6 +1497,18 @@ public class UIManager : MonoBehaviour
         sb.AppendLine();
 
         sb.AppendLine("Bukti yang dimiliki: " + BuktiKeTeks(gs.bukti));
+        sb.AppendLine();
+
+        // Tujuan hari ini + daftar yang masih harus beres.
+        sb.AppendLine("TUJUAN HARI INI");
+        sb.AppendLine("  " + TujuanGame.Tujuan(gs));
+        sb.AppendLine();
+        sb.AppendLine("DAFTAR PEKERJAAN (" + TujuanGame.Sisa(gs) + " belum beres)");
+        List<string> checklist = TujuanGame.Checklist(gs);
+        for (int i = 0; i < checklist.Count; i++)
+        {
+            sb.AppendLine("  " + checklist[i]);
+        }
         sb.AppendLine();
 
         // Kartu proyek E0 (naskah: kartu di rak buku kamar 07).
@@ -1557,6 +1582,9 @@ public class UIManager : MonoBehaviour
     public void BukaPanelLaptop()
     {
         tabLaptop = 0;
+        // Daftar kegiatan dibangun ulang tiap kali laptop dibuka, soalnya
+        // status kegiatan bisa berubah setelah Raka melakukan sesuatu.
+        BangunDaftarAktivitas();
         PerbaruiLaptop();
         BukaPanel(panelLaptop);
     }
@@ -1734,6 +1762,14 @@ public class UIManager : MonoBehaviour
             // positive = tenaga bertambah (istirahat).
             string label = aktivitas.nama + "  (tenaga " + (-aktivitas.biayaTenaga)
                          + ", tekanan " + aktivitas.biayaTekanan + ")";
+
+            // Kalau belum bisa dijalankan, tulis alasannya. Jadi pemain
+            // tahu nunggu apa, bukan cuma dikasih tombol mati.
+            string alasan;
+            if (!gs.activitySystem.CekSyarat(aktivitas, out alasan))
+            {
+                label += "  [belum bisa: " + alasan + "]";
+            }
 
             ActivityData aktivitasDipilih = aktivitas;
             BuatTombol(wadahAktivitas, label, delegate { MintaJalankanAktivitas(aktivitasDipilih); });

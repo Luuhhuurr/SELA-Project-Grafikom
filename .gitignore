@@ -35,6 +35,8 @@ sela_test*.xml
 sela_test*.log
 hasil-uji.xml
 uji.log
+build-detail.log
+foto.log
 
 # OS
 .DS_Store

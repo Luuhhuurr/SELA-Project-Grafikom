@@ -65,6 +65,29 @@ sesi, jadi pemain harus memilih urutan kegiatan.
 - **Ending.** Malam hari ke-7 Raka memilih tawaran A, B, C, atau pulang. Ending
   hanya mengikuti pilihan itu, bukan angka tenaga atau tekanan.
 
+### Panduan tujuan
+
+HUD selalu menuliskan satu baris **TUJUAN** — hal yang harus dilakukan sekarang.
+Tab **Catatan** berisi daftar pekerjaan yang belum beres, ditandai `[ ]` kalau
+belum dan `[x]` kalau sudah. Semua aktivitas yang belum bisa dijalankan juga
+membuat alasan, misalnya "butuh E1". Jadi tidak ada langkah yang disembunyikan.
+
+## Ruangan
+
+Tiga area, semuanya dibangun dari kode (`Assets/Scripts/SELA/Editor/`):
+
+- **Kamar 07** — meja kerja sama laptopnya, lampu meja, kursi kerja, kasur berlapis,
+  lemari, rak buku berisi buku, jendela bertirai dan tanaman, jam dinding, poster,
+  karpet, ember sampah.
+- **Lorong Kos** — lampu neon, rak sepatu, papan pengumuman, karpet depan pintu,
+  gagang dan nomor pintu.
+- **Ruang Terpanjang** — bangku panjang, kardus di sudut, papan tulis, rak.
+
+Tekstur lantai, tembok, kayu, kain, dan kardus dibuat dari kode (pola keramik,
+plester, serat kayu, anyaman kain) lalu disimpan ke `Assets/GameData/Tekstur/`.
+Tidak ada file gambar eksternal. Pencahayaan memakai lampu titik di dalam kamar
+supaya suasananya hangat, bukan terang bener dari luar.
+
 Menu **Pengaturan** (dari menu awal) berisi ukuran teks 100% / 125% / 150% dan
 saat matikan animasi notifikasi.
 
@@ -94,7 +117,8 @@ Semua antar script berkomunikasi lewat `GameState.Instance`, tidak ada
 
 Dua uji PlayMode ada di `Assets/Scripts/SELA/Tests/`:
 
-- `UjiSmokePlayMode` — scene bisa dimuat, semua sistem ke-reference dengan benar.
+- `UjiSmokePlayMode` — scene bisa dimuat, semua sistem ke-reference dengan benar,
+  pemain berdiri di lantai (gravitasi manual jalan), dan HUD punya tujuan harian.
 - `UjiTujuhHariPlayMode` — main penuh tujuh hari: CV, kirim lamaran A dan B,
   interview, dua tawaran, sampai layar ending.
 

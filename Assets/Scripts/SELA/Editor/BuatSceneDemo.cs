@@ -84,17 +84,21 @@ namespace SELA.Editor
             SiapkanFolder();
             ImportTmpEssentials();
 
-            Material lantai = BuatMaterial("M_Lantai", new Color(0.32f, 0.30f, 0.28f));
-            Material dinding = BuatMaterial("M_Dinding", new Color(0.72f, 0.70f, 0.66f));
-            Material mebel = BuatMaterial("M_Mebel", new Color(0.55f, 0.40f, 0.28f));
-            Material kertas = BuatMaterial("M_Kertas", new Color(0.93f, 0.92f, 0.86f));
+            // Paket material detail: lantai keramik, tembok plester, kayu,
+            // kain, dan lain-lain. Teksturnya dibuat dari kode.
+            BuatDetailRuang.Paket detail = BuatDetailRuang.SiapkanMaterial();
+
+            Material lantai = detail.lantai;
+            Material dinding = detail.dinding;
+            Material mebel = detail.kayu;
+            Material kertas = detail.kertas;
             Material pintu = BuatMaterial("M_Pintu", new Color(0.30f, 0.36f, 0.50f));
             Material retakan = BuatMaterial("M_Retakan", new Color(0.62f, 0.18f, 0.18f));
-            Material barang = BuatMaterial("M_Barang", new Color(0.85f, 0.75f, 0.35f));
+            Material barang = detail.logam;
 
             List<ActivityData> daftarAktivitas = BuatSemuaAktivitas();
 
-            BangunScene(daftarAktivitas, lantai, dinding, mebel, kertas, pintu, retakan, barang);
+            BangunScene(daftarAktivitas, lantai, dinding, mebel, kertas, pintu, retakan, barang, detail);
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
@@ -108,7 +112,7 @@ namespace SELA.Editor
             BuatFolderIfBelumAda(FolderMaterial);
         }
 
-        private static void BuatFolderIfBelumAda(string path)
+        public static void BuatFolderIfBelumAda(string path)
         {
             if (AssetDatabase.IsValidFolder(path)) return;
 
@@ -349,7 +353,7 @@ namespace SELA.Editor
         // Material
         // ---------------------------------------------------------------
 
-        private static Material BuatMaterial(string nama, Color warna)
+        public static Material BuatMaterial(string nama, Color warna)
         {
             string path = FolderMaterial + "/" + nama + ".mat";
             Material m = AssetDatabase.LoadAssetAtPath<Material>(path);
@@ -588,7 +592,7 @@ namespace SELA.Editor
         private static void BangunScene(List<ActivityData> daftarAktivitas,
                                         Material lantai, Material dinding, Material mebel,
                                         Material kertas, Material pintu, Material retakan,
-                                        Material barang)
+                                        Material barang, BuatDetailRuang.Paket detail)
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -597,13 +601,24 @@ namespace SELA.Editor
             ObjekInteraktif objKasur = null;
 
             // ---------- Pencahayaan ----------
+            // Cahaya utama datang dari lampu di dalam kamar (lihat
+            // BuatDetailRuang). directional cuma pelengkap, makanya
+            // intensify kecil supaya ruangan terasa hangat, bukan terang bener.
             GameObject goLight = new GameObject("Directional Light");
             goLight.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
             Light light = goLight.AddComponent<Light>();
             light.type = LightType.Directional;
-            light.color = new Color(1f, 0.96f, 0.90f);
-            light.intensity = 1.1f;
+            light.color = new Color(1f, 0.94f, 0.86f);
+            light.intensity = 0.35f;
             light.shadows = LightShadows.Soft;
+
+            // Ambient gelap sedikit, biar kontras lampu di dalam kamar kerasa.
+            UnityEngine.Rendering.AmbientMode modeLama = RenderSettings.ambientMode;
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
+            RenderSettings.ambientSkyColor = new Color(0.32f, 0.30f, 0.28f);
+            RenderSettings.ambientEquatorColor = new Color(0.22f, 0.21f, 0.20f);
+            RenderSettings.ambientGroundColor = new Color(0.14f, 0.13f, 0.12f);
+            if (modeLama == UnityEngine.Rendering.AmbientMode.Flat) RenderSettings.ambientLight = new Color(0.26f, 0.25f, 0.24f);
 
             GameObject goVolume = new GameObject("Global Volume");
             Volume volume = goVolume.AddComponent<Volume>();
@@ -625,11 +640,12 @@ namespace SELA.Editor
             Dinding("Dinding_Kamar_Kanan_1", new Vector3(3f, 1.5f, 1.65f), new Vector3(0.2f, 3f, 1.9f), dinding, kamar);
             Dinding("Dinding_Kamar_Kanan_2", new Vector3(3f, 1.5f, -1.65f), new Vector3(0.2f, 3f, 1.9f), dinding, kamar);
 
-            // Meja kerja
-            GameObject meja = Kubik("Meja", new Vector3(-1.5f, 0.4f, -1.2f), new Vector3(1.8f, 0.8f, 0.9f), mebel, kamar);
+            // Meja kerja. Yang dibuat ini hanya panel atasnya, kaki dan lacinya
+            // ditambahkan di BuatDetailRuang.
+            GameObject meja = Kubik("Meja", new Vector3(-1.5f, 0.76f, -1.2f), new Vector3(1.8f, 0.08f, 0.9f), mebel, kamar);
 
             // Laptop di meja
-            GameObject laptop = Kubik("Laptop", new Vector3(-1.5f, 0.84f, -1.2f), new Vector3(0.55f, 0.05f, 0.38f), barang, meja);
+            GameObject laptop = Kubik("Laptop", new Vector3(-1.5f, 0.84f, -1.2f), new Vector3(0.55f, 0.05f, 0.38f), detail.plastik, meja);
             objLaptop = laptop.AddComponent<ObjekInteraktif>();
             objLaptop.namaTampilan = "Buka Laptop";
 
@@ -641,7 +657,7 @@ namespace SELA.Editor
             objKartuIbu.namaBenda = "KartuIbu";
 
             // Kasur
-            GameObject kasur = Kubik("Kasur", new Vector3(1.7f, 0.3f, 1.4f), new Vector3(1.2f, 0.6f, 2f), mebel, kamar);
+            GameObject kasur = Kubik("Kasur", new Vector3(0.9f, 0.3f, 1.4f), new Vector3(1.2f, 0.6f, 2f), detail.kainLembut, kamar);
             objKasur = kasur.AddComponent<ObjekInteraktif>();
             objKasur.namaTampilan = "Tidur";
 
@@ -649,8 +665,8 @@ namespace SELA.Editor
             Kubik("Rak Buku", new Vector3(-2.5f, 0.6f, 1.2f), new Vector3(0.5f, 1.2f, 1.6f), mebel, kamar);
 
             // Jendela + kursi (jangkar Retakan 3)
-            Kubik("Jendela", new Vector3(1.7f, 1.6f, 2.4f), new Vector3(1.2f, 1.2f, 0.1f), barang, kamar);
-            GameObject kursi = Kubik("Kursi Jendela", new Vector3(1.7f, 0.45f, 1.9f), new Vector3(0.5f, 0.9f, 0.5f), mebel, kamar);
+            Kubik("Jendela", new Vector3(1.7f, 1.6f, 2.4f), new Vector3(1.2f, 1.2f, 0.1f), mebel, kamar);
+            GameObject kursi = Kubik("Kursi Jendela", new Vector3(2.2f, 0.45f, 1.85f), new Vector3(0.5f, 0.9f, 0.5f), mebel, kamar);
 
             GameObject anchor3Go = new GameObject("Retakan3_Anchor");
             anchor3Go.transform.SetParent(kursi.transform, false);
@@ -663,7 +679,7 @@ namespace SELA.Editor
             anchor3.namaBendaYangDibutuhkan = "KartuIbu";
             anchor3.objekEfek = EfekRetakan(anchor3Go.transform, retakan, new Vector3(0f, 0.1f, 0f));
             anchor3.labelTujuan = BuatLabel3D("LabelTujuan_Retakan3", "Dudukan kosong menghadap jendela.",
-                                             new Vector3(1.7f, 1.45f, 1.75f), Quaternion.Euler(0f, 180f, 0f));
+                                             new Vector3(2.2f, 1.45f, 1.7f), Quaternion.Euler(0f, 180f, 0f));
             anchor3.labelTujuan.SetActive(false);
             anchor3.pesanBendaSalah = "Kartu ini bukan untuk dudukan kursi itu.";
 
@@ -737,9 +753,16 @@ namespace SELA.Editor
             kartu.namaBenda = "KartuE0";
             kartu.sembunyiSetelahDiambil = true;
 
+            // ---------- Detail ruangan ----------
+            // Semua barang kecil, lampu, dan tekstur lihat BuatDetailRuang.
+            GameObject akarDetail = new GameObject("Detail Ruangan");
+            BuatDetailRuang.BangunSemua(detail, akarDetail.transform);
+
             // ---------- Pemain ----------
+            // Spawn di tengah kamar, jauh dari kasur dan meja, jadi
+            // pemain nggak mulai dengan terjepit di dalam perabot.
             GameObject pemain = new GameObject("Pemain");
-            pemain.transform.position = new Vector3(0.5f, 0.1f, 1.2f);
+            pemain.transform.position = new Vector3(0.4f, 0.1f, -0.2f);
 
             CharacterController karakter = pemain.AddComponent<CharacterController>();
             karakter.height = 1.8f;
@@ -1029,8 +1052,10 @@ namespace SELA.Editor
             rtHud.anchorMax = new Vector2(0f, 1f);
             rtHud.pivot = new Vector2(0f, 1f);
             rtHud.anchoredPosition = Vector2.zero;
-            rtHud.sizeDelta = new Vector2(540f, 230f);
-            ui.teksHUD = BuatTeks(pHud.transform, "Teks", "Hari 1 / 7", Vector2.zero, Vector2.one, 20f, TextAlignmentOptions.TopLeft);
+            rtHud.sizeDelta = new Vector2(620f, 280f);
+            ui.teksHUD = BuatTeks(pHud.transform, "Teks", "Hari 1 / 7", new Vector2(0f, 0.34f), new Vector2(1f, 1f), 20f, TextAlignmentOptions.TopLeft);
+            ui.teksTujuan = BuatTeks(pHud.transform, "Tujuan", "TUJUAN: ...", new Vector2(0f, 0f), new Vector2(1f, 0.32f), 18f, TextAlignmentOptions.TopLeft);
+            ui.teksTujuan.color = new Color(1f, 0.86f, 0.55f);
 
             // ---------- Panel Prompt ----------
             GameObject pPrompt = BuatPanel(canvas, "PanelPrompt", new Color(0f, 0f, 0f, 0f), false);

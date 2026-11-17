@@ -109,6 +109,35 @@ public class UjiSmokePlayMode
         Assert.IsFalse(ui.panelMenuAwal.activeSelf, "Menu awal tidak tertutup.");
         Assert.IsFalse(fpc.uiTerbuka, "Pemain masih terkunci setelah menu ditutup.");
 
+        // 7b. Pemain harus benar-benar berdiri di lantai.
+        // Kalau gravitasi manualnya nggak jalan, pemain melayang.
+        CharacterController karakterPemain = fpc.GetComponent<CharacterController>();
+        yield return new WaitForSeconds(0.5f);
+
+        Assert.Less(karakterPemain.transform.position.y, 0.25f,
+            "Pemain masih melayang di atas lantai. y = " + karakterPemain.transform.position.y);
+        Assert.Greater(karakterPemain.transform.position.y, -0.5f,
+            "Pemain jatuh menembus lantai. y = " + karakterPemain.transform.position.y);
+
+        // 7c. Angkat pemain, dia harus turun sendiri karena gravitasi.
+        Vector3 posisiAwal = karakterPemain.transform.position;
+        karakterPemain.transform.position = new Vector3(posisiAwal.x, posisiAwal.y + 1.5f, posisiAwal.z);
+        yield return new WaitForSeconds(0.8f);
+
+        Assert.Less(karakterPemain.transform.position.y, 0.35f,
+            "Pemain melayang, gravitasi manual tidak bekerja. y = " + karakterPemain.transform.position.y);
+        Assert.Greater(karakterPemain.transform.position.y, -0.5f,
+            "Pemain jatuh menembus lantai. y = " + karakterPemain.transform.position.y);
+
+        // 7d. Tidak boleh ada perabot yang menelan pemain di posisi awal.
+        Collider[] nabok = Physics.OverlapSphere(
+            karakterPemain.transform.position + new Vector3(0f, 0.9f, 0f), 0.2f);
+        for (int i = 0; i < nabok.Length; i++)
+        {
+            if (nabok[i] is CharacterController) continue;
+            Assert.Fail("Pemain berada di dalam '" + nabok[i].gameObject.name + "' saat mulai game.");
+        }
+
         // 8. Membuka panel Catatan harus mengunci gerak; menutupnya melepas.
         ui.BukaPanelCatatan();
         yield return null;
@@ -116,6 +145,22 @@ public class UjiSmokePlayMode
         Assert.IsTrue(ui.panelCatatan.activeSelf, "PanelCatatan tidak terbuka.");
         StringAssert.Contains("Kartu Proyek (E0)", ui.teksCatatan.text,
             "Catatan tidak menampilkan kartu proyek E0.");
+
+        // 8a. Catatan harus berisi tujuan harian dan daftar pekerjaan,
+        //     supaya pemain tahu harus ngapain.
+        StringAssert.Contains("TUJUAN HARI INI", ui.teksCatatan.text,
+            "Catatan tidak menampilkan bagian tujuan harian.");
+        StringAssert.Contains("DAFTAR PEKERJAAN", ui.teksCatatan.text,
+            "Catatan tidak menampilkan daftar pekerjaan yang belum beres.");
+        StringAssert.Contains("[ ]", ui.teksCatatan.text,
+            "Checklist di Catatan tidak menandai pekerjaan yang belum selesai.");
+
+        // 8b. HUD harus selalu menampilkan tujuan harian.
+        Assert.IsNotNull(ui.teksTujuan, "Teks tujuan di HUD tidak ditemukan.");
+        StringAssert.Contains("TUJUAN", ui.teksTujuan.text,
+            "HUD tidak menampilkan tujuan harian.");
+        StringAssert.DoesNotContain("TUJUAN: ...", ui.teksTujuan.text,
+            "Tujuan di HUD belum dihitung.");
 
         ui.TutupSemuaPanel();
         yield return null;

@@ -17,6 +17,8 @@ public class FirstPersonController : MonoBehaviour
     public float kecepatanJalan = 2.2f;   // meter per detik
     public float tinggiKamera = 1.6f;    // tinggi kamera dari lantai (meter)
     public float fov = 70f;              // sudut pandang kamera
+    public float gravitasi = -18f;      // gravitasi ke bawah (angka minus)
+    public float kecepatanTurunMaks = 12f; // batas kecepatan jatuh
 
     [Header("Interaksi")]
     public float jarakInteraksi = 2f;    // jarak maksimum untuk tombol E
@@ -32,7 +34,9 @@ public class FirstPersonController : MonoBehaviour
 
     private CharacterController karakter;
     private Transform kepalaCamera;
+    private Vector3 titikAwal = Vector3.zero;
     private float sudutPuncak = 0f;      // pitch (atas/bawah)
+    private float kecepatanVertikal = 0f; // kecepatan jatuh (meter per detik)
     private string promptTerakhir = "";
     private bool statusUiTerakhir = false;
 
@@ -45,6 +49,8 @@ public class FirstPersonController : MonoBehaviour
         {
             Debug.LogWarning("[FirstPersonController] GameObject ini belum punya CharacterController!");
         }
+
+        titikAwal = transform.position;
 
         // Cari kamera sebagai child GameObject.
         kepalaCamera = transform.Find("Camera");
@@ -83,9 +89,33 @@ public class FirstPersonController : MonoBehaviour
             arah = HitungArah();
         }
 
+        // Gravitasi manual. CharacterController tidak memakai gravitasi
+        // sendiri, jadi tanpa ini pemain melayang waktu turun tangga atau
+        // turun dari kasur.
+        if (karakter.isGrounded)
+        {
+            // Dorongan kecil ke bawah supaya kaki nempel lantai, nggak
+            // ngelayang pas jalan pelan.
+            if (kecepatanVertikal < 0f) kecepatanVertikal = -2f;
+        }
+        else
+        {
+            kecepatanVertikal += gravitasi * Time.deltaTime;
+            if (kecepatanVertikal < -kecepatanTurunMaks) kecepatanVertikal = -kecepatanTurunMaks;
+        }
+
         // CharacterController.Move HARUS dipanggil setiap frame, termasuk
         // dengan vektor nol, supaya pemain tetap menempel di lantai.
-        karakter.Move(arah * kecepatanJalan * Time.deltaTime);
+        if (karakter == null) return;
+        karakter.Move((arah * kecepatanJalan + Vector3.up * kecepatanVertikal) * Time.deltaTime);
+
+        // Kalau somehow jatuh lewat lantai, balikin ke kamar. Jadi pemain
+        // nggak nyangkut di bawah map.
+        if (transform.position.y < -3f)
+        {
+            transform.position = titikAwal;
+            kecepatanVertikal = 0f;
+        }
 
         if (!uiTerbuka)
         {
