@@ -62,5 +62,5 @@ file save pemain (save diarahkan ke folder sementara).
 
 ## Catatan
 
-`Assets/ClaudeConnector.cs` dan `Assets/TesClaude.cs` sengaja tidak ikut dalam repo
-(cobaan pemanggilan API, tidak terkait dengan game).
+File percobaan pemanggilan API (`ClaudeConnector.cs` dan `TesClaude.cs`) sudah dihapus
+dari project ini dan tidak ada di dalam repo.
